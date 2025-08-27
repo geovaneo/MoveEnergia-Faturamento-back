@@ -31,7 +31,7 @@ namespace MoveEnergia.Billing.Api
             {
                 c.SwaggerDoc("v1", new OpenApiInfo
                 {
-                    Title = "MoveEnergia Consumer API",
+                    Title = "MoveEnergia Billing API",
                     Version = "v1"
                 });
             });
@@ -69,10 +69,10 @@ namespace MoveEnergia.Billing.Api
                 });
                 app.UseSwaggerUI(c =>
                 {
-                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "MoveEnergia Consumer API v1");
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "MoveEnergia Billing API v1");
                 });
             }
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
 
             app.UseAuthorization();
 
