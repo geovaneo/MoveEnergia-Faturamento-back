@@ -9,7 +9,7 @@ using MoveEnergia.Billing.Core.Interface.Repository;
 using MoveEnergia.Billing.Core.Interface.Service;
 using MoveEnergia.Billing.Data.Repository;
 using MoveEnergia.Billing.Service;
-using Service;
+
 
 namespace MoveEnergia.Billing.IoC
 {
@@ -17,28 +17,16 @@ namespace MoveEnergia.Billing.IoC
     {
         public static void AddGeneralRepositoryConfiguration(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddScoped<ITenantsRepository, TenantsRepository>();
-            services.AddScoped<IConsumerUnitRepository, ConsumerUnitRepository>();
-            services.AddScoped<ICustomerRepository, CustomerRepository>();
-            services.AddScoped<IConsumerUnitMeasurementRepository, ConsumerUnitMeasurementRepository>();
-            services.AddScoped<IDetalhesFaturaCacheRepository, DetalhesFaturaCacheRepository>();
             services.AddScoped<IDistributorRepository, DistributorRepository>();
         }
 
         public static void AddGeneralServiceConfiguration(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddScoped<ITenantsService, TenantsService>();
-            services.AddScoped<IConsumerUnitService, ConsumerUnitService>();
-            services.AddScoped<IHomeInfoService, HomeInfoService>();
-            services.AddScoped<ICustomerService, CustomerService>();
             services.AddScoped<IDistributorService, DistributorService>();
         }
 
         public static void AddGeneralAdapterConfiguration(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddScoped<IConsumerUnitAdapter, ConsumerUnitAdapter>();
-            services.AddScoped<IAuthenticationAdapter, AuthenticationAdapter>();
-            services.AddScoped<IHomeInfoAdapter, HomeInfoAdapter>();
             services.AddScoped<IDistributorAdapter, DistributorAdapter>();
         }
 
