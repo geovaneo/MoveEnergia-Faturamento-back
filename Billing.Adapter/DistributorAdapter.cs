@@ -180,22 +180,28 @@ namespace MoveEnergia.Billing.Adapter
 
             try
             {
-                //var distributor = _mapper.Map<Distributor>(request);
+                var distributor = await _distributorService.GetByIdAsync(id);
 
-                await _distributorService.DeleteAsync(id);
+                if (distributor != null)
+                {
+                    await _distributorService.DeleteAsync(id);
 
-                //if (result != null)
-                //{
-                //    returnResponseDto.Error = false;
-                //    returnResponseDto.StatusCode = 200;
-                //    returnResponseDto.Data = result;
-                //}
-                //else
-                //{
-                //    returnResponseDto.Error = false;
-                //    returnResponseDto.StatusCode = 404;
-                //    returnResponseDto.Data = null;
-                //}
+                    returnResponseDto.Error = false;
+                    returnResponseDto.StatusCode = 200;
+                    returnResponseDto.Data = distributor;
+                }
+                else
+                {
+                    returnResponseDto.Error = false;
+                    returnResponseDto.StatusCode = 404;
+                    returnResponseDto.Data = null;
+                    returnResponseDto.Erros?.Add(new ReturnResponseErrorDto()
+                    {
+                        ErrorCode = 404,
+                        ErrorMessage = "Distribuidor não localizado para o identificador"
+                    });
+
+                }
             }
             catch (Exception ex)
             {
