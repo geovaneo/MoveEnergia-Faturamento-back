@@ -46,6 +46,17 @@ namespace MoveEnergia.Billing.Api
                 });
             });
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("CorsPolicy", builder =>
+                {
+                    builder.AllowAnyOrigin()
+                           .AllowAnyHeader()
+                           .AllowAnyMethod();
+                });
+            });
+
+
             builder.Services.AddEntityFrameworkConfiguration(builder.Configuration);
             builder.Services.AddAddIdentityConfiguration(builder.Configuration);
 
@@ -58,6 +69,8 @@ namespace MoveEnergia.Billing.Api
             builder.Logging.AddConsole();
 
             var app = builder.Build();
+
+            app.UseCors("CorsPolicy");
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
