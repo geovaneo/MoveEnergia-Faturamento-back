@@ -7,11 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="FluentValidation" Version="12.0.0" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.8" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Billing.Data\MoveEnergia.Billing.Data.csproj" />
+    <ProjectReference Include="..\Billing.Helper\MoveEnergia.Billing.Helper.csproj" />
   </ItemGroup>
 
 </Project>

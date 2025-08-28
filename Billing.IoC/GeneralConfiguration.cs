@@ -1,12 +1,14 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using MoveEnergia.Billing.Core.Entity;
-using MoveEnergia.Billing.Data.Context;
 using MoveEnergia.Billing.Adapter;
+using MoveEnergia.Billing.Core.Entity;
 using MoveEnergia.Billing.Core.Interface.Adapter;
 using MoveEnergia.Billing.Core.Interface.Repository;
 using MoveEnergia.Billing.Core.Interface.Service;
+using MoveEnergia.Billing.Core.Validation;
+using MoveEnergia.Billing.Data.Context;
 using MoveEnergia.Billing.Data.Repository;
 using MoveEnergia.Billing.Service;
 
@@ -28,6 +30,11 @@ namespace MoveEnergia.Billing.IoC
         public static void AddGeneralAdapterConfiguration(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddScoped<IDistributorAdapter, DistributorAdapter>();
+        }
+
+        public static void AddGeneralValidationConfiguration(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddValidatorsFromAssemblyContaining<DistributorValidation>();
         }
 
         public static void AddAddIdentityConfiguration(this IServiceCollection services, IConfiguration configuration)
