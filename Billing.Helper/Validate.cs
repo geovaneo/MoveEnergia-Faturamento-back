@@ -3,7 +3,7 @@ using MoveEnergia.Billing.Core.Dto;
 
 public static class Validation
 {
-    public static async Task<List<ReturnResponseErrorDto>?> ValidateAsync<T>(T entity, IValidator<T> validator)
+    public static async Task<List<ReturnResponseErrorDto>?> ProcessValidateAsync<T>(T entity, IValidator<T> validator)
     {
         var validation = await validator.ValidateAsync(entity);
 
