@@ -1,4 +1,5 @@
-﻿using MoveEnergia.Billing.Core.Entity;
+﻿using MoveEnergia.Billing.Core.Dto;
+using MoveEnergia.Billing.Core.Entity;
 using System.Threading.Tasks;
 
 namespace MoveEnergia.Billing.Core.Interface.Service
@@ -7,8 +8,8 @@ namespace MoveEnergia.Billing.Core.Interface.Service
     {
         Task<Distributor> GetByIdAsync(int Id);
         Task<List<Distributor>> GetAllAsync();
-        Task<Distributor> CreateAsync(Distributor distributor);
-        Task<Distributor> UpdateAsync(Distributor distributor);
+        Task<ReturnResponseDto> CreateAsync(Distributor distributor);
+        Task<ReturnResponseDto> UpdateAsync(Distributor distributor);
         Task DeleteAsync(int Id);      
     }
 }

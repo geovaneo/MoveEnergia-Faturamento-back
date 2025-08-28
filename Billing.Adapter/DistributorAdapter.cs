@@ -108,9 +108,7 @@ namespace MoveEnergia.Billing.Adapter
 
                 if (result != null)
                 {
-                    returnResponseDto.Error = false;
-                    returnResponseDto.StatusCode = 200;
-                    returnResponseDto.Data = result;
+                    return result;
                 }
                 else
                 {
@@ -147,9 +145,7 @@ namespace MoveEnergia.Billing.Adapter
 
                 if (result != null)
                 {
-                    returnResponseDto.Error = false;
-                    returnResponseDto.StatusCode = 200;
-                    returnResponseDto.Data = result;
+                    return result;
                 }
                 else
                 {

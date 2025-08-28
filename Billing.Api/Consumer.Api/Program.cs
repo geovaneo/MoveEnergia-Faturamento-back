@@ -1,3 +1,5 @@
+using FluentValidation;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.OpenApi.Models;
 using MoveEnergia.Billing.IoC;
 using Newtonsoft.Json;
@@ -56,6 +58,7 @@ namespace MoveEnergia.Billing.Api
                 });
             });
 
+            builder.Services.AddGeneralValidationConfiguration(builder.Configuration);
 
             builder.Services.AddEntityFrameworkConfiguration(builder.Configuration);
             builder.Services.AddAddIdentityConfiguration(builder.Configuration);
@@ -69,6 +72,21 @@ namespace MoveEnergia.Billing.Api
             builder.Logging.AddConsole();
 
             var app = builder.Build();
+
+            app.UseExceptionHandler(config =>
+            {
+                config.Run(async context =>
+                {
+                    var exception = context.Features.Get<IExceptionHandlerFeature>()?.Error;
+
+                    if (exception is ValidationException validationEx)
+                    {
+                        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                        var errors = validationEx.Errors.Select(e => new { e.PropertyName, e.ErrorMessage });
+                        await context.Response.WriteAsJsonAsync(errors);
+                    }
+                });
+            });
 
             app.UseCors("CorsPolicy");
 
