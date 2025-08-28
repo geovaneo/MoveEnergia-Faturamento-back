@@ -1,7 +1,9 @@
-﻿namespace MoveEnergia.RdStation.Adapter.Interface.Service
+﻿using MoveEnergia.RdStation.Adapter.Dto;
+
+namespace MoveEnergia.RdStation.Adapter.Interface.Service
 {
     public interface IRdstationIntegrationService
     {
-        Task GetCellphoneNumbersAsync(string dealId, string token);
+        Task<ReturnResponseDto> GetCellphoneNumbersAsync(string dealId);
     }
 }

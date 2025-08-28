@@ -1,8 +1,8 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace MoveEnergia.Rdstation.Adapter.Entity
+namespace MoveEnergia.RdStation.Adapter.Dto
 {
-   public class Contact
+   public class ContactResponseDto
     {
         [JsonPropertyName("id")]
         public string id { get; set; }
@@ -11,6 +11,6 @@ namespace MoveEnergia.Rdstation.Adapter.Entity
         public string name { get; set; }
 
         [JsonPropertyName("phones")]
-        public List<Phone> phones { get; set; }
+        public List<ContactPhoneResponseDto> phones { get; set; }
     }
 }

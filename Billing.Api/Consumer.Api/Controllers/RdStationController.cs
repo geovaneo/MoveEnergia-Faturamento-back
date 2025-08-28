@@ -33,15 +33,14 @@ namespace MoveEnergia.Billing.Api.Controllers
         }
 
         [HttpGet]
-        [Route("{id}")]
+        [Route("Contacts/{dealId}")]
         [ProducesResponseType(typeof(ReturnResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetCellphoneNumbersAsync(int id)
+        public async Task<IActionResult> GetCellphoneNumbersAsync(string dealId)
         {
-            await _iRdstationIntegrationAdapter.GetCellphoneNumbersAsync("", "");
-            //return StatusCode(retornoDto.StatusCode, retornoDto);
-            return Ok();
+            var retornoDto = await _iRdstationIntegrationAdapter.GetCellphoneNumbersAsync(dealId);
+            return StatusCode(retornoDto.StatusCode, retornoDto);
         }
     }
 }

@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using MoveEnergia.Rdstation.Adapter.Configuration;
 using MoveEnergia.Rdstation.Adapter.Interface.Service;
+using MoveEnergia.RdStation.Adapter.Dto;
 using MoveEnergia.RdStation.Adapter.Interface.Service;
 
 namespace MoveEnergia.Rdstation.Adapter.Service
@@ -21,11 +22,20 @@ namespace MoveEnergia.Rdstation.Adapter.Service
             _httpService = httpService;
             _rdStationConfiguration = rdStationConfiguration.Value;
         }
-        public async Task GetCellphoneNumbersAsync(string dealId, string token)
+        public async Task<ReturnResponseDto> GetCellphoneNumbersAsync(string dealId)
         {
-            string url = $"{_rdStationConfiguration.UrlBase}/deals/{dealId}/contacts?token={token}&limit=200";
+            string roteApi = $"{_rdStationConfiguration.UrlBase}/deals/{dealId}/contacts?token={_rdStationConfiguration.Token}&limit=200";
+
+            var returnHttp = await _httpService.GetAsync<ContactDataResponseDto>(roteApi);
+
+            var returnDto = new ReturnResponseDto()
+            {
+                Error = false,
+                StatusCode = 200,
+                Data = returnHttp,
+            };
+
+            return returnDto;
         }
-
-
     }
 }
