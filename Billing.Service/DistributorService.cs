@@ -58,7 +58,7 @@ namespace MoveEnergia.Billing.Service
         }
         public async Task<ReturnResponseDto> UpdateAsync(Distributor distributor)
         {
-            var validation = await Validation.ValidateAsync(distributor, _validator);
+            var validation = await Validation.ProcessValidateAsync(distributor, _validator);
 
             if (validation != null && validation.Count > 0)
             {
