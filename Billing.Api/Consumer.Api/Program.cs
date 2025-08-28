@@ -58,15 +58,23 @@ namespace MoveEnergia.Billing.Api
                 });
             });
 
+            builder.Services.AddHttpClient();
+
             builder.Services.AddGeneralValidationConfiguration(builder.Configuration);
 
             builder.Services.AddEntityFrameworkConfiguration(builder.Configuration);
             builder.Services.AddAddIdentityConfiguration(builder.Configuration);
 
             builder.Services.AddGeneralRepositoryConfiguration(builder.Configuration);
+
             builder.Services.AddGeneralAdapterConfiguration(builder.Configuration);
 
+            builder.Services.AddRdStationIntegrationAdapterConfiguration(builder.Configuration);
+            builder.Services.AddRdStationIntegrationServiceConfiguration(builder.Configuration);
+            
+
             builder.Services.AddGeneralServiceConfiguration(builder.Configuration);
+            builder.Services.AddAdapterSettings(builder.Configuration);
 
             builder.Logging.ClearProviders();
             builder.Logging.AddConsole();

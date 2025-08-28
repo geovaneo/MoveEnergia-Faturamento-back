@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using MoveEnergia.Billing.Adapter;
 using MoveEnergia.Billing.Core.Dto;
 using MoveEnergia.Billing.Core.Dto.Request;
 using MoveEnergia.Billing.Core.Interface.Adapter;

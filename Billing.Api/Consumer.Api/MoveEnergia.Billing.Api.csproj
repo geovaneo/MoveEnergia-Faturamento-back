@@ -32,6 +32,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Billing.IoC\MoveEnergia.Billing.IoC.csproj" />
     <ProjectReference Include="..\..\Billing.Service\MoveEnergia.Billing.Service.csproj" />
+    <ProjectReference Include="..\..\MoveEnergia.Rdstation.Adapter\MoveEnergia.RdStation.Adapter.csproj" />
   </ItemGroup>
 
 </Project>
