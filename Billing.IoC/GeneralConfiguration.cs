@@ -54,10 +54,6 @@ namespace MoveEnergia.Billing.IoC
                 .AddJsonFile($"appsettings.{env}.json", optional: true, reloadOnChange: true)
                 .AddEnvironmentVariables();
 
-            //services.Configure<SoapSapConfiguration>(configuration.GetSection("SOAPSAP"));
-            //services.Configure<OrdemManutencaoConfiguration>(configuration.GetSection("CargaOrdemManutencaoConfiguration"));
-            //services.Configure<AnaliseRiscoConfiguration>(configuration.GetSection("AnaliseRiscoConfiguration"));
-
             services.AddMemoryCache();
         }
 
