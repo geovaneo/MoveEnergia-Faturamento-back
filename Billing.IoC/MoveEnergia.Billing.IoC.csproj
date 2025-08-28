@@ -21,6 +21,7 @@
     <ProjectReference Include="..\Billing.Core\MoveEnergia.Billing.Core.csproj" />
     <ProjectReference Include="..\Billing.Data\MoveEnergia.Billing.Data.csproj" />
     <ProjectReference Include="..\Billing.Service\MoveEnergia.Billing.Service.csproj" />
+    <ProjectReference Include="..\MoveEnergia.Rdstation.Adapter\MoveEnergia.RdStation.Adapter.csproj" />
   </ItemGroup>
 
 </Project>
