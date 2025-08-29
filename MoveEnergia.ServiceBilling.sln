@@ -16,9 +16,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Ioc", "Ioc", "{BCF88535-A021-4BDC-A2C9-BCEA7CF2F246}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Service", "Service", "{D9541451-219B-4087-BBAA-BA4D3E21DDE7}"
-	ProjectSection(SolutionItems) = preProject
-		MoveEnergia.Rdstation.Adapter\RdstationIntegrationAdapter.cs = MoveEnergia.Rdstation.Adapter\RdstationIntegrationAdapter.cs
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Adpter", "Adpter", "{47EAD825-83BE-48BB-BAA3-987894223D6D}"
 EndProject

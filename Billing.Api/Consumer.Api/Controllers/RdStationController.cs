@@ -60,7 +60,7 @@ namespace MoveEnergia.Billing.Api.Controllers
         [ProducesResponseType(typeof(ReturnResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> FetchUnidadesFromRdStationAsync(string dealId, [FromBody]FetchUnidadesPageRequestDto request)
+        public async Task<IActionResult> FetchUnidadesFromRdStationAsync(string dealId, [FromBody] FetchUnidadesPageRequestDto request)
         {
             var retornoDto = await _iRdstationIntegrationAdapter.FetchUnidadesFromRdStationAsync(dealId, request.isStage, request.page, request.limit);
             return StatusCode(retornoDto.StatusCode, retornoDto);
