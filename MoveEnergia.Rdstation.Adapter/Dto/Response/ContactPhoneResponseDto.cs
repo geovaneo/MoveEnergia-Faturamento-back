@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace MoveEnergia.RdStation.Adapter.Dto
+namespace MoveEnergia.RdStation.Adapter.Dto.Response
 {
     public class ContactPhoneResponseDto
     {

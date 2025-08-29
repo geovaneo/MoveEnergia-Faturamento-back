@@ -1,4 +1,4 @@
-﻿namespace MoveEnergia.RdStation.Adapter.Dto
+﻿namespace MoveEnergia.RdStation.Adapter.Dto.Response
 {
     public class ReturnResponseErrorDto
     {
