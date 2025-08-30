@@ -37,10 +37,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MoveEnergia.Billing.Helper"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MoveEnergia.RdStation.Adapter", "MoveEnergia.Rdstation.Adapter\MoveEnergia.RdStation.Adapter.csproj", "{BF620145-93F0-4392-BA72-41500E2625D9}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "07-WorkerService", "07-WorkerService", "{439766FA-1293-4AF4-B359-979A43AA3A29}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkerRdStation", "WorkerRdStation\WorkerRdStation.csproj", "{C9152F52-A65E-4D0B-A43A-C220DF197B0E}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -79,10 +75,6 @@ Global
 		{BF620145-93F0-4392-BA72-41500E2625D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BF620145-93F0-4392-BA72-41500E2625D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BF620145-93F0-4392-BA72-41500E2625D9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C9152F52-A65E-4D0B-A43A-C220DF197B0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C9152F52-A65E-4D0B-A43A-C220DF197B0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C9152F52-A65E-4D0B-A43A-C220DF197B0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C9152F52-A65E-4D0B-A43A-C220DF197B0E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -99,7 +91,6 @@ Global
 		{1837CF95-CB0E-8F9F-2241-B72A79225805} = {BCF88535-A021-4BDC-A2C9-BCEA7CF2F246}
 		{75E8EBD3-29C6-C8DC-6D21-3C6A9E9DBB29} = {4B7AFEC7-D811-4FC9-AE1D-EF4B276114AE}
 		{BF620145-93F0-4392-BA72-41500E2625D9} = {47EAD825-83BE-48BB-BAA3-987894223D6D}
-		{C9152F52-A65E-4D0B-A43A-C220DF197B0E} = {439766FA-1293-4AF4-B359-979A43AA3A29}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F9F4DC4B-306D-4D19-B768-B90207B89D30}
