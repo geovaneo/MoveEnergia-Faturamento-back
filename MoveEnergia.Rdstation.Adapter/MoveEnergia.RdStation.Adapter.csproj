@@ -15,9 +15,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Dto\Response\" />
     <Folder Include="Dto\Request\" />
     <Folder Include="Entity\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Billing.Core\MoveEnergia.Billing.Core.csproj" />
   </ItemGroup>
 
 </Project>
