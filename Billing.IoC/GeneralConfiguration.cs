@@ -15,6 +15,7 @@ using MoveEnergia.Rdstation.Adapter.Configuration;
 using MoveEnergia.Rdstation.Adapter.Interface.Service;
 using MoveEnergia.Rdstation.Adapter.Service;
 using MoveEnergia.RdStation.Adapter;
+using MoveEnergia.RdStation.Adapter.Configuration;
 using MoveEnergia.RdStation.Adapter.Interface.Adapter;
 using MoveEnergia.RdStation.Adapter.Interface.Service;
 
@@ -26,6 +27,7 @@ namespace MoveEnergia.Billing.IoC
         public static void AddGeneralRepositoryConfiguration(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddScoped<IDistributorRepository, DistributorRepository>();
+            services.AddScoped<IRdFieldsIntegrationRepository, RdFieldsIntegrationRepository>();
         }
 
         public static void AddGeneralServiceConfiguration(this IServiceCollection services, IConfiguration configuration)
@@ -35,7 +37,7 @@ namespace MoveEnergia.Billing.IoC
 
         public static void AddRdStationIntegrationServiceConfiguration(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddScoped<IRdstationIntegrationService, RdstationIntegrationService>();
+            services.AddScoped<IRdStationIntegrationService, RdStationIntegrationService>();
             services.AddScoped<IHttpService, HttpService>();
         }
         public static void AddGeneralAdapterConfiguration(this IServiceCollection services, IConfiguration configuration)
@@ -74,6 +76,7 @@ namespace MoveEnergia.Billing.IoC
         public static void AddAdapterSettings(this IServiceCollection services, IConfiguration configuration)
         {
             services.Configure<RdStationConfiguration>(configuration.GetSection("RdStationConfiguration"));
+            services.Configure<RdStationIntegrationCustomer>(configuration.GetSection("RdStationIntegrationCustomer"));
 
         }
     }

@@ -1,8 +1,14 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using MoveEnergia.Billing.Core.Dto.Request;
+using MoveEnergia.Billing.Core.Dto.Response;
+using MoveEnergia.Rdstation.Adapter.Configuration;
+using MoveEnergia.RdStation.Adapter.Configuration;
 using MoveEnergia.RdStation.Adapter.Dto.Response;
 using MoveEnergia.RdStation.Adapter.Interface.Adapter;
 using MoveEnergia.RdStation.Adapter.Interface.Service;
+using System.Linq;
 
 namespace MoveEnergia.RdStation.Adapter
 {
@@ -10,14 +16,17 @@ namespace MoveEnergia.RdStation.Adapter
     {
         private readonly IMapper _mapper;
         private readonly ILogger<RdstationIntegrationAdapter> _logger;
-        private readonly IRdstationIntegrationService _iRdstationIntegrationService;
+        private readonly IRdStationIntegrationService _iRdStationIntegrationService;
+        private readonly RdStationIntegrationCustomer _rdStationIntegrationCustomer;
         public RdstationIntegrationAdapter(ILogger<RdstationIntegrationAdapter> logger,
                                            IMapper mapper,
-                                           IRdstationIntegrationService iRdstationIntegrationService)
+                                           IRdStationIntegrationService iRdStationIntegrationService,
+                                           IOptions<RdStationIntegrationCustomer> rdStationIntegrationCustomer)
         {
             _logger = logger;
             _mapper = mapper;
-            _iRdstationIntegrationService = iRdstationIntegrationService;
+            _iRdStationIntegrationService = iRdStationIntegrationService;
+            _rdStationIntegrationCustomer = rdStationIntegrationCustomer.Value;
         }
 
         public async Task<ReturnResponseDto> GetCellphoneNumbersAsync(string dealId)
@@ -27,7 +36,7 @@ namespace MoveEnergia.RdStation.Adapter
 
             try
             {
-                var returnDto = await _iRdstationIntegrationService.GetCellphoneNumbersAsync(dealId);
+                var returnDto = await _iRdStationIntegrationService.GetCellphoneNumbersAsync(dealId);
 
                 if (returnDto.Data != null)
                 {
@@ -61,7 +70,7 @@ namespace MoveEnergia.RdStation.Adapter
             
             try
             {
-                var returnDto = await _iRdstationIntegrationService.FetchUnidadesPageAsync(page = 0, limit = 200,next_page = "");
+                var returnDto = await _iRdStationIntegrationService.FetchUnidadesPageAsync(page, limit, next_page);
 
                 if (returnDto.Data != null)
                 {
@@ -87,7 +96,6 @@ namespace MoveEnergia.RdStation.Adapter
 
             return returnResponseDto;
         }
-
         public async Task<ReturnResponseDto> FetchUnidadesFromRdStationAsync(string dealId, bool isStage, int page = 0, int limit = 1)
         {
             ReturnResponseDto returnResponseDto = new ReturnResponseDto();
@@ -95,7 +103,7 @@ namespace MoveEnergia.RdStation.Adapter
 
             try
             {
-                var returnDto = await _iRdstationIntegrationService.FetchUnidadesFromRdStationAsync(dealId, isStage, page, limit);
+                var returnDto = await _iRdStationIntegrationService.FetchUnidadesFromRdStationAsync(dealId, isStage, page, limit);
 
                 if (returnDto.Data != null)
                 {
@@ -105,6 +113,72 @@ namespace MoveEnergia.RdStation.Adapter
                 {
                     returnResponseDto.Error = true;
                     returnResponseDto.StatusCode = 404;
+                }
+            }
+            catch (Exception ex)
+            {
+                returnResponseDto.Error = true;
+                returnResponseDto.StatusCode = 500;
+                returnResponseDto.Data = null;
+                returnResponseDto.Erros?.Add(new ReturnResponseErrorDto()
+                {
+                    ErrorCode = 500,
+                    ErrorMessage = ex.Message
+                });
+            }
+
+            return returnResponseDto;
+        }
+        public async Task<ReturnResponseDto> ProcessIntegrationCustomerAsync(ProcessIntegrationCustomerRequestDto requestDto)
+        {
+            ReturnResponseDto returnResponseDto = new ReturnResponseDto();
+            returnResponseDto.Erros = new List<ReturnResponseErrorDto>();
+
+            try
+            {
+                string nextPage = "";
+
+                while (true)
+                {
+                    var registros = await _iRdStationIntegrationService.FetchUnidadesPageAsync(0, requestDto.Records, nextPage);
+
+                    if (registros != null && registros.Data == null)
+                        break;
+
+                    if (registros != null &&  registros.Data != null)
+                    {
+                        var listDeals = (RdStationUnidadeConsumidoraResponseDto)registros.Data;
+
+                        if (listDeals.deals != null && listDeals.deals.Count > 0)
+                        {
+
+                            foreach (var itemDeal in listDeals.deals)
+                            {
+                                var dictyDeal = itemDeal.deal_custom_fields.ToDictionary(x => x.custom_field_id, y => y.value?.ToString() ?? string.Empty).ToList();
+
+                                if (dictyDeal != null && dictyDeal.Count > 0)
+                                {
+                                    var isCustomer = dictyDeal.Exists(kv =>
+                                                                       kv.Key == _rdStationIntegrationCustomer.KeyCustomer &&
+                                                                       kv.Value == _rdStationIntegrationCustomer.ValueCustomer);
+
+                                    if (isCustomer)
+                                    {
+
+                                        var listCustomer = dictyDeal.ToDictionary(kv => kv.Key, kv => kv.Value);
+
+                                        var customer = await _iRdStationIntegrationService.MappingDealToCustomer(listCustomer, itemDeal);
+                                    }
+                                }
+                            }
+                        }
+                        nextPage = listDeals.next_page;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                   
                 }
             }
             catch (Exception ex)
