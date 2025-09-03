@@ -159,7 +159,13 @@ namespace MoveEnergia.RdStation.Adapter
 
                             foreach (var itemDeal in listDeals.deals)
                             {
-                                var dictyDeal = itemDeal.deal_custom_fields.ToDictionary(x => x.custom_field_id, y => y.value?.ToString() ?? string.Empty).ToList();
+
+                                var dictyDeal = itemDeal.deal_custom_fields
+                                    .GroupBy(x => x.custom_field_id)
+                                    .ToDictionary(
+                                        g => g.Key,
+                                        g => g.Last().value?.ToString() ?? string.Empty
+                                    ).ToList();
 
                                 if (dictyDeal != null && dictyDeal.Count > 0)
                                 {
