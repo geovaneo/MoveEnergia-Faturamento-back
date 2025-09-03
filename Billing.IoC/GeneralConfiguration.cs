@@ -28,6 +28,10 @@ namespace MoveEnergia.Billing.IoC
         {
             services.AddScoped<IDistributorRepository, DistributorRepository>();
             services.AddScoped<IRdFieldsIntegrationRepository, RdFieldsIntegrationRepository>();
+            services.AddScoped<IAddressRepository, AddressRepository>();
+            services.AddScoped<ICityRepository, CityRepository>();
+            services.AddScoped<ICustomerRepository, CustomerRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
         }
 
         public static void AddGeneralServiceConfiguration(this IServiceCollection services, IConfiguration configuration)

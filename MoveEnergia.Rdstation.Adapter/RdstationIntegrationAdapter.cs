@@ -3,12 +3,17 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MoveEnergia.Billing.Core.Dto.Request;
 using MoveEnergia.Billing.Core.Dto.Response;
+using MoveEnergia.Billing.Core.Entity;
+using MoveEnergia.Billing.Core.Enum;
 using MoveEnergia.Rdstation.Adapter.Configuration;
 using MoveEnergia.RdStation.Adapter.Configuration;
 using MoveEnergia.RdStation.Adapter.Dto.Response;
 using MoveEnergia.RdStation.Adapter.Interface.Adapter;
 using MoveEnergia.RdStation.Adapter.Interface.Service;
 using System.Linq;
+using System.Runtime.ConstrainedExecution;
+using System.Xml.Linq;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MoveEnergia.RdStation.Adapter
 {
@@ -167,7 +172,79 @@ namespace MoveEnergia.RdStation.Adapter
 
                                         var listCustomer = dictyDeal.ToDictionary(kv => kv.Key, kv => kv.Value);
 
-                                        var customer = await _iRdStationIntegrationService.MappingDealToCustomer(listCustomer, itemDeal);
+                                        var customerMap = await _iRdStationIntegrationService.MappingDealToCustomer(listCustomer, itemDeal);
+
+                                        if(customerMap.Data != null)
+                                        {
+                                            var customerData = (RdCustomerResponseDto)customerMap.Data;
+
+                                            User user = new User();
+                                            Customer customer = new Customer();
+                                            Address address = new Address();
+
+                                            if (customerData.User != null)
+                                            {
+                                                user = new User()
+                                                {
+                                                    TenantId = customerData.User.TenantId,
+                                                    UserName = customerData.User.UserName,
+                                                    Name = customerData.User.Name,
+                                                    Surname = customerData.User.UserName,
+                                                    PasswordHash = customerData.User.PasswordHash,
+                                                    PhoneNumberConfirmed = customerData.User.PhoneNumberConfirmed,
+                                                    EmailConfirmed = customerData.User.EmailConfirmed,
+                                                    IsActive = customerData.User.IsActive,
+                                                    AccessFailedCount = customerData.User.AccessFailedCount,
+                                                    NormalizedEmail = customerData.User.NormalizedEmail,
+                                                    NormalizedUserName = customerData.User.NormalizedUserName
+                                                };
+                                            }
+                                            else
+                                            {
+                                                //error
+                                            }
+
+                                            if (customerData != null)
+                                            {
+                                                customer = new Customer()
+                                                {
+                                                    Id = customerData.Id,
+                                                    UserId = customerData.UserId,
+                                                    Name = customerData.Name,
+                                                    RazoSocial = customerData.RazoSocial,
+                                                    Code = customerData.Code,
+                                                    TipoCustomer = customerData.TipoCustomer,
+                                                    TenantId = customerData.TenantId,
+                                                    Mercado = customerData.Mercado
+                                                };
+                                            }
+                                            else
+                                            {
+                                                //erro
+                                            }
+
+                                            if (customerData.Adress != null)
+                                            {
+                                                address = new Address()
+                                                {
+                                                    Id = customerData.Adress.Id,
+                                                    CEP = customerData.Adress.CEP,
+                                                    Logradouro = customerData.Adress.Logradouro,
+                                                    Numero = customerData.Adress.Numero,
+                                                    Complemento = customerData.Adress.Complemento,
+                                                    Bairro = customerData.Adress.Bairro,
+                                                    CityId = customerData.Adress.CityId,
+                                                    CustomerId = customerData.Adress.CustomerId
+                                                };
+                                            }
+                                            else
+                                            {
+                                                //erro
+                                            }
+
+                                            var customerAdd = await _iRdStationIntegrationService.SetCustomerSync(customer, address, user);
+
+                                        }
                                     }
                                 }
                             }
@@ -177,8 +254,7 @@ namespace MoveEnergia.RdStation.Adapter
                     else
                     {
                         break;
-                    }
-                   
+                    }                   
                 }
             }
             catch (Exception ex)

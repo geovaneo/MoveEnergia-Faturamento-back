@@ -67,7 +67,7 @@ namespace MoveEnergia.Billing.Api.Controllers
         }
 
         [HttpPost]
-        [Route("SyncCustomer")]
+        [Route("Sync/Customer")]
         [ProducesResponseType(typeof(ReturnResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]

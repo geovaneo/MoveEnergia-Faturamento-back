@@ -10,8 +10,6 @@ using MoveEnergia.Rdstation.Adapter.Interface.Service;
 using MoveEnergia.RdStation.Adapter.Configuration;
 using MoveEnergia.RdStation.Adapter.Dto.Response;
 using MoveEnergia.RdStation.Adapter.Interface.Service;
-using System;
-using System.Net.Mail;
 
 namespace MoveEnergia.Rdstation.Adapter.Service
 {
@@ -21,13 +19,21 @@ namespace MoveEnergia.Rdstation.Adapter.Service
         private readonly IHttpService _httpService;
         private readonly RdStationConfiguration _rdStationConfiguration;
         private readonly RdStationIntegrationCustomer _rdStationIntegrationCustomer;
-        private readonly IRdFieldsIntegrationRepository _iRdFieldsIntegrationRepository;    
+        private readonly IRdFieldsIntegrationRepository _iRdFieldsIntegrationRepository;
+        private readonly ICityRepository _iCityRepository;
+        private readonly IAddressRepository _iAddressRepository;
+        private readonly ICustomerRepository _iCustomerRepository;
+        private readonly IUserRepository _iUserRepository;
 
         public RdStationIntegrationService(ILogger<RdStationIntegrationService> logger,
                                            IHttpService httpService,
                                            IOptions<RdStationConfiguration> rdStationConfiguration,
                                            IOptions<RdStationIntegrationCustomer> rdStationIntegrationCustomer,
-                                           IRdFieldsIntegrationRepository rdFieldsIntegrationRepository                                           
+                                           IRdFieldsIntegrationRepository rdFieldsIntegrationRepository,
+                                           ICityRepository iCityRepository,
+                                           IAddressRepository iAddressRepository,
+                                           ICustomerRepository iCustomerRepository,
+                                           IUserRepository iUserRepository
                                           )
         {
             _logger = logger;
@@ -35,6 +41,10 @@ namespace MoveEnergia.Rdstation.Adapter.Service
             _rdStationConfiguration = rdStationConfiguration.Value;
             _rdStationIntegrationCustomer = rdStationIntegrationCustomer.Value;
             _iRdFieldsIntegrationRepository = rdFieldsIntegrationRepository;
+            _iCityRepository = iCityRepository;
+            _iAddressRepository = iAddressRepository;
+            _iCustomerRepository = iCustomerRepository;
+            _iUserRepository = iUserRepository;
         }
         public async Task<ReturnResponseDto> GetCellphoneNumbersAsync(string dealId)
         {
@@ -211,11 +221,16 @@ namespace MoveEnergia.Rdstation.Adapter.Service
                     rdField = fields.Where(x => x.Label == "Endereço - Cidade").FirstOrDefault();
                     var cidade = DictionaryString.GetValueByFieldId(fieldsDeal, rdField.IdRd);
 
-                    adress.CityId = 1;
+                    adress.CityId = 0;
+                    
+                    var city = await _iCityRepository.GetByNameAsync(cidade);
+
+                    if (city != null)
+                    {
+                        adress.CityId = city.Id;
+                    }
 
                     customer.Adress = adress;
-
-
                 }
 
                 returnResponseDto.Error = false;
@@ -227,6 +242,58 @@ namespace MoveEnergia.Rdstation.Adapter.Service
 
             returnResponseDto.Error = false;
             returnResponseDto.StatusCode = 404;
+            return returnResponseDto;
+        }
+        public async Task<ReturnResponseDto> SetCustomerSync(Customer customer, Address address, User user)
+        {
+
+            ReturnResponseDto returnResponseDto = new ReturnResponseDto();
+            returnResponseDto.Erros = new List<ReturnResponseErrorDto>();
+
+            var customerExist = await _iCustomerRepository.GetByCodeAsync(customer.Code);
+            var userExist = new User();
+
+            if (customerExist == null) 
+            {
+                userExist = await _iUserRepository.GetByUserNameAsync(user.UserName);
+
+                if (userExist == null)
+                {
+                    var userAdd = await _iUserRepository.CreateAsync(user);
+                    await _iUserRepository.SaveAsync();
+
+                    if (userAdd.Id != 0)
+                    {
+                        customer.UserId = userAdd.Id;
+
+                        var customerAdd = await _iCustomerRepository.CreateAsync(customer);
+                        await _iCustomerRepository.SaveAsync();
+
+                        var addresExist = await _iAddressRepository.GetByCepNumeroCustomerAsync(address.CEP, address.Numero, customerAdd.Id);
+
+                        if (addresExist == null)
+                        {
+                            var addresAdd = await _iAddressRepository.CreateAsync(address);
+                            await _iAddressRepository.SaveAsync();
+                        }
+                    }
+                }
+            }
+            else
+            {
+                var addresExist = await _iAddressRepository.GetByCepNumeroCustomerAsync(address.CEP, address.Numero, customer.Id);
+
+                if (addresExist == null)
+                {
+                    var addresAdd = await _iAddressRepository.CreateAsync(address);
+                    await _iAddressRepository.SaveAsync();
+                }
+            }
+
+            returnResponseDto.Error = false;
+            returnResponseDto.StatusCode = 200;
+            returnResponseDto.Data = customer;
+
             return returnResponseDto;
         }
     }
