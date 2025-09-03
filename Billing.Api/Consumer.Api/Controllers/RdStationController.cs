@@ -51,7 +51,7 @@ namespace MoveEnergia.Billing.Api.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> FetchUnidadesPageAsync([FromBody] FetchUnidadesPageRequestDto request)
         {
-            var retornoDto = await _iRdstationIntegrationAdapter.FetchUnidadesPageAsync(request.page, request.limit, request.next_page);
+             var retornoDto = await _iRdstationIntegrationAdapter.FetchUnidadesPageAsync(request.page, request.limit, request.next_page);
             return StatusCode(retornoDto.StatusCode, retornoDto);
         }
 
@@ -65,5 +65,17 @@ namespace MoveEnergia.Billing.Api.Controllers
             var retornoDto = await _iRdstationIntegrationAdapter.FetchUnidadesFromRdStationAsync(dealId, request.isStage, request.page, request.limit);
             return StatusCode(retornoDto.StatusCode, retornoDto);
         }
+
+        [HttpPost]
+        [Route("Sync/Customer")]
+        [ProducesResponseType(typeof(ReturnResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> ProcessIntegrationCustomerAsync([FromBody] ProcessIntegrationCustomerRequestDto request)
+        {
+            var retornoDto = await _iRdstationIntegrationAdapter.ProcessIntegrationCustomerAsync(request);
+            return StatusCode(retornoDto.StatusCode, retornoDto);
+        }
+
     }
 }

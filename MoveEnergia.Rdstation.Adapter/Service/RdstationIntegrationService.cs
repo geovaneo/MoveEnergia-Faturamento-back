@@ -1,27 +1,50 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MoveEnergia.Billing.Core.Dto.Response;
+using MoveEnergia.Billing.Core.Entity;
+using MoveEnergia.Billing.Core.Enum;
+using MoveEnergia.Billing.Core.Interface.Repository;
+using MoveEnergia.Billing.Helper;
 using MoveEnergia.Rdstation.Adapter.Configuration;
 using MoveEnergia.Rdstation.Adapter.Interface.Service;
+using MoveEnergia.RdStation.Adapter.Configuration;
 using MoveEnergia.RdStation.Adapter.Dto.Response;
 using MoveEnergia.RdStation.Adapter.Interface.Service;
 
 namespace MoveEnergia.Rdstation.Adapter.Service
 {
-    public class RdstationIntegrationService : IRdstationIntegrationService
+    public class RdStationIntegrationService : IRdStationIntegrationService
     {
-        private readonly ILogger<RdstationIntegrationService> _logger;
+        private readonly ILogger<RdStationIntegrationService> _logger;
         private readonly IHttpService _httpService;
         private readonly RdStationConfiguration _rdStationConfiguration;
+        private readonly RdStationIntegrationCustomer _rdStationIntegrationCustomer;
+        private readonly IRdFieldsIntegrationRepository _iRdFieldsIntegrationRepository;
+        private readonly ICityRepository _iCityRepository;
+        private readonly IAddressRepository _iAddressRepository;
+        private readonly ICustomerRepository _iCustomerRepository;
+        private readonly IUserRepository _iUserRepository;
 
-        public RdstationIntegrationService(ILogger<RdstationIntegrationService> logger,
+        public RdStationIntegrationService(ILogger<RdStationIntegrationService> logger,
                                            IHttpService httpService,
-                                           IOptions<RdStationConfiguration> rdStationConfiguration
+                                           IOptions<RdStationConfiguration> rdStationConfiguration,
+                                           IOptions<RdStationIntegrationCustomer> rdStationIntegrationCustomer,
+                                           IRdFieldsIntegrationRepository rdFieldsIntegrationRepository,
+                                           ICityRepository iCityRepository,
+                                           IAddressRepository iAddressRepository,
+                                           ICustomerRepository iCustomerRepository,
+                                           IUserRepository iUserRepository
                                           )
         {
             _logger = logger;
             _httpService = httpService;
             _rdStationConfiguration = rdStationConfiguration.Value;
+            _rdStationIntegrationCustomer = rdStationIntegrationCustomer.Value;
+            _iRdFieldsIntegrationRepository = rdFieldsIntegrationRepository;
+            _iCityRepository = iCityRepository;
+            _iAddressRepository = iAddressRepository;
+            _iCustomerRepository = iCustomerRepository;
+            _iUserRepository = iUserRepository;
         }
         public async Task<ReturnResponseDto> GetCellphoneNumbersAsync(string dealId)
         {
@@ -38,7 +61,6 @@ namespace MoveEnergia.Rdstation.Adapter.Service
 
             return returnDto;
         }
-
         public async Task<ReturnResponseDto> FetchUnidadesPageAsync(int page = 0, int limit = 200, string next_page = "")
         {
 
@@ -60,7 +82,6 @@ namespace MoveEnergia.Rdstation.Adapter.Service
 
             return returnDto;
         }
-
         public async Task<ReturnResponseDto> FetchUnidadesFromRdStationAsync(string dealId, bool isStage, int page = 0, int limit = 1)
         {
             string roteApi = "";
@@ -84,6 +105,196 @@ namespace MoveEnergia.Rdstation.Adapter.Service
             };
 
             return returnDto;
+        }
+        public async Task<ReturnResponseDto> MappingDealToCustomer(Dictionary<string, string> fieldsDeal, DealsResponseDto dealsResponseDto)
+        {
+            ReturnResponseDto returnResponseDto = new ReturnResponseDto();
+            returnResponseDto.Erros = new List<ReturnResponseErrorDto>();
+
+            var fieldsIntegration = await _iRdFieldsIntegrationRepository.GetAll();
+
+            if (fieldsIntegration != null )
+            {
+                var fields = fieldsIntegration.ToList();
+
+                RdCustomerResponseDto customer = new RdCustomerResponseDto();
+
+                if (fields != null && fields.Count > 0)
+                {
+                    
+                    RdFieldsIntegration rdField = new RdFieldsIntegration();
+
+                    rdField = fields.Where(x => x.Label == "Nome Consumidor").FirstOrDefault();
+                    customer.Name = DictionaryString.GetValueByFieldId(fieldsDeal, rdField.IdRd);
+                    var isNameRequired = rdField.Required;
+
+                    rdField = fields.Where(x => x.Label == "CPF/CNPJ").FirstOrDefault();
+                    customer.Code = DictionaryString.GetValueByFieldId(fieldsDeal, rdField.IdRd);
+
+                    if (rdField.Required && customer.Code == "")
+                    {
+                        returnResponseDto.Error = true;
+                        returnResponseDto.StatusCode = 400;
+                        return returnResponseDto;
+                    }
+                    else
+                    {
+                        var doc = Strings.FormatToValueCPFCNPJ(customer.Code);
+                        customer.TipoCustomer = doc.Length > 11 ? (byte)TipoCustomer.Juridica : (byte)TipoCustomer.Fisica;
+                        customer.TenantId = 0;
+                    }
+
+                    string NameUser = "";
+
+                    RdCustomerUserResponseDto user = new RdCustomerUserResponseDto();                   
+
+                    if (dealsResponseDto.contacts != null && dealsResponseDto.contacts.Count > 0)
+                    {
+                        var emailReg = dealsResponseDto.contacts.FirstOrDefault().emails.FirstOrDefault();
+
+                        if (emailReg != null)
+                        {
+                            user.Email = emailReg.email;
+                        }
+
+                        if (customer.Name == "")
+                        {
+                            NameUser = dealsResponseDto.contacts.FirstOrDefault().name;
+                        }
+                        else 
+                        {
+                            NameUser = customer.Name;
+                        }
+
+                    }
+                    else
+                    {
+                        if (dealsResponseDto.user != null )
+                        {
+                            user.Email = dealsResponseDto.user.email;
+                            NameUser = dealsResponseDto.name;
+                        }
+                        else
+                        {
+                            rdField = fields.Where(x => x.Label == "Coop - E-mail para envio fatura").FirstOrDefault();
+                            user.Email = DictionaryString.GetValueByFieldId(fieldsDeal, rdField.IdRd);
+                        }
+                    }
+
+                    if (isNameRequired && customer.Name == "")
+                    {
+                        returnResponseDto.Error = true;
+                        returnResponseDto.StatusCode = 400;
+                        return returnResponseDto;
+                    }
+
+                    var nameToMail = user.Email.Substring(0, user.Email.IndexOf('@')).Replace(" ","").Trim();
+
+                    user.TenantId = customer.TenantId;
+                    user.UserName = nameToMail;
+                    user.Name = Strings.FormatToName(NameUser);
+                    user.Surname = Strings.FormatToName(NameUser);
+                    user.PasswordHash = _rdStationIntegrationCustomer.HashPassWordDefaultUser;
+                    user.PhoneNumberConfirmed = false;
+                    user.EmailConfirmed = true;
+                    user.IsActive = true;
+                    user.AccessFailedCount = 0;
+                    user.NormalizedEmail = user.Email.ToUpperInvariant();
+                    user.NormalizedUserName = user.UserName.ToUpperInvariant();
+
+                    customer.User = user;
+
+                    RdCustomerAdressResponseDto adress = new RdCustomerAdressResponseDto();
+
+                    rdField = fields.Where(x => x.Label == "Endereço - CEP").FirstOrDefault();
+                    adress.CEP = DictionaryString.GetValueByFieldId(fieldsDeal, rdField.IdRd);
+
+                    rdField = fields.Where(x => x.Label == "Endereço - Logradouro").FirstOrDefault();
+                    adress.Logradouro = DictionaryString.GetValueByFieldId(fieldsDeal, rdField.IdRd);
+
+                    rdField = fields.Where(x => x.Label == "Endereço - Número").FirstOrDefault();
+                    adress.Numero = DictionaryString.GetValueByFieldId(fieldsDeal, rdField.IdRd);
+
+                    rdField = fields.Where(x => x.Label == "Endereço - Bairro").FirstOrDefault();
+                    adress.Bairro = DictionaryString.GetValueByFieldId(fieldsDeal, rdField.IdRd);
+
+                    rdField = fields.Where(x => x.Label == "Endereço - Cidade").FirstOrDefault();
+                    var cidade = DictionaryString.GetValueByFieldId(fieldsDeal, rdField.IdRd);
+
+                    adress.CityId = 0;
+                    
+                    var city = await _iCityRepository.GetByNameAsync(cidade);
+
+                    if (city != null)
+                    {
+                        adress.CityId = city.Id;
+                    }
+
+                    customer.Adress = adress;
+                }
+
+                returnResponseDto.Error = false;
+                returnResponseDto.StatusCode = 200;
+                returnResponseDto.Data = customer;
+                return returnResponseDto;
+
+            }
+
+            returnResponseDto.Error = false;
+            returnResponseDto.StatusCode = 404;
+            return returnResponseDto;
+        }
+        public async Task<ReturnResponseDto> SetCustomerSync(Customer customer, Address address, User user)
+        {
+
+            ReturnResponseDto returnResponseDto = new ReturnResponseDto();
+            returnResponseDto.Erros = new List<ReturnResponseErrorDto>();
+
+            var customerExist = await _iCustomerRepository.GetByCodeAsync(customer.Code);
+            var userExist = new User();
+
+            if (customerExist == null) 
+            {
+                userExist = await _iUserRepository.GetByUserNameAsync(user.UserName);
+
+                if (userExist == null)
+                {
+                    var userAdd = await _iUserRepository.CreateAsync(user);
+                    await _iUserRepository.SaveAsync();
+
+                    if (userAdd.Id != 0)
+                    {
+                        customer.UserId = userAdd.Id;
+
+                        var customerAdd = await _iCustomerRepository.CreateAsync(customer);
+                        await _iCustomerRepository.SaveAsync();
+
+                        var addresExist = await _iAddressRepository.GetByCepNumeroCustomerAsync(address.CEP, address.Numero, customerAdd.Id);
+
+                        if (addresExist == null)
+                        {
+                            var addresAdd = await _iAddressRepository.CreateAsync(address);
+                            await _iAddressRepository.SaveAsync();
+                        }
+                    }
+                }
+            }
+            else
+            {
+                var addresExist = await _iAddressRepository.GetByCepNumeroCustomerAsync(address.CEP, address.Numero, customer.Id);
+
+                if (addresExist == null)
+                {
+                    var addresAdd = await _iAddressRepository.CreateAsync(address);
+                    await _iAddressRepository.SaveAsync();
+                }
+            }
+
+            returnResponseDto.Error = false;
+            returnResponseDto.StatusCode = 200;
+            returnResponseDto.Data = customer;
+
+            return returnResponseDto;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using MoveEnergia.RdStation.Adapter.Dto.Response;
+﻿using MoveEnergia.Billing.Core.Dto.Request;
+using MoveEnergia.RdStation.Adapter.Dto.Response;
 
 namespace MoveEnergia.RdStation.Adapter.Interface.Adapter
 {
@@ -7,5 +8,6 @@ namespace MoveEnergia.RdStation.Adapter.Interface.Adapter
         Task<ReturnResponseDto> GetCellphoneNumbersAsync(string dealId);
         Task<ReturnResponseDto> FetchUnidadesPageAsync(int page = 0, int limit = 200, string next_page = "");
         Task<ReturnResponseDto> FetchUnidadesFromRdStationAsync(string dealId, bool isStage, int page = 0, int limit = 1);
+        Task<ReturnResponseDto> ProcessIntegrationCustomerAsync(ProcessIntegrationCustomerRequestDto requestDto);
     }
 }

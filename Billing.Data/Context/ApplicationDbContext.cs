@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MoveEnergia.Billing.Core.Entity;
-using MoveEnergia.Billing.Core.Entity;
 
 namespace MoveEnergia.Billing.Data.Context
 {
@@ -15,6 +14,10 @@ namespace MoveEnergia.Billing.Data.Context
         public DbSet<User> User { get; set; }
         public DbSet<DetalhesFaturaCache> DetalhesFaturaCache { get; set; }
         public DbSet<FaturaCache> FaturaCache { get; set; }
+        public DbSet<RdFieldsIntegration> RdFieldsIntegration { get; set; }
+        public DbSet<City> City { get; set; }
+        public DbSet<Customer> Customer { get; set; }
+        public DbSet<Address> Address { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
