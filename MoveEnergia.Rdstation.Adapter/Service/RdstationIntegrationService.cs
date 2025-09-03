@@ -24,6 +24,7 @@ namespace MoveEnergia.Rdstation.Adapter.Service
         private readonly IAddressRepository _iAddressRepository;
         private readonly ICustomerRepository _iCustomerRepository;
         private readonly IUserRepository _iUserRepository;
+        private readonly IConsumerUnitCustumerRepository _iConsumerUnitCostumerRepository;
 
         public RdStationIntegrationService(ILogger<RdStationIntegrationService> logger,
                                            IHttpService httpService,
@@ -33,7 +34,8 @@ namespace MoveEnergia.Rdstation.Adapter.Service
                                            ICityRepository iCityRepository,
                                            IAddressRepository iAddressRepository,
                                            ICustomerRepository iCustomerRepository,
-                                           IUserRepository iUserRepository
+                                           IUserRepository iUserRepository,
+                                           IConsumerUnitCustumerRepository iConsumerUnitCostumerRepository
                                           )
         {
             _logger = logger;
@@ -45,6 +47,7 @@ namespace MoveEnergia.Rdstation.Adapter.Service
             _iAddressRepository = iAddressRepository;
             _iCustomerRepository = iCustomerRepository;
             _iUserRepository = iUserRepository;
+            _iConsumerUnitCostumerRepository = iConsumerUnitCostumerRepository;
         }
         public async Task<ReturnResponseDto> GetCellphoneNumbersAsync(string dealId)
         {
@@ -144,6 +147,9 @@ namespace MoveEnergia.Rdstation.Adapter.Service
                         customer.TenantId = 0;
                     }
 
+                    rdField = fields.Where(x => x.Label == "Unidade consumidora").FirstOrDefault();
+                    customer.UC = DictionaryString.GetValueByFieldId(fieldsDeal, rdField.IdRd);
+
                     string NameUser = "";
 
                     RdCustomerUserResponseDto user = new RdCustomerUserResponseDto();                   
@@ -157,13 +163,12 @@ namespace MoveEnergia.Rdstation.Adapter.Service
                             user.Email = emailReg.email;
                         }
 
-                        if (customer.Name == "")
+                        var nomeContact = dealsResponseDto.contacts.FirstOrDefault().name;
+
+                        if (nomeContact != "")
                         {
-                            NameUser = dealsResponseDto.contacts.FirstOrDefault().name;
-                        }
-                        else 
-                        {
-                            NameUser = customer.Name;
+                            NameUser = nomeContact;
+                            customer.Name = nomeContact;
                         }
 
                     }
@@ -244,7 +249,7 @@ namespace MoveEnergia.Rdstation.Adapter.Service
             returnResponseDto.StatusCode = 404;
             return returnResponseDto;
         }
-        public async Task<ReturnResponseDto> SetCustomerSync(Customer customer, Address address, User user)
+        public async Task<ReturnResponseDto> SetCustomerSync(Customer customer, Address address, User user, ConsumerUnitCustumer consumerUnitCostumer)
         {
 
             ReturnResponseDto returnResponseDto = new ReturnResponseDto();
@@ -269,30 +274,63 @@ namespace MoveEnergia.Rdstation.Adapter.Service
                         var customerAdd = await _iCustomerRepository.CreateAsync(customer);
                         await _iCustomerRepository.SaveAsync();
 
-                        var addresExist = await _iAddressRepository.GetByCepNumeroCustomerAsync(address.CEP, address.Numero, customerAdd.Id);
-
-                        if (addresExist == null)
+                        if (customerAdd.Id != 0)
                         {
-                            var addresAdd = await _iAddressRepository.CreateAsync(address);
-                            await _iAddressRepository.SaveAsync();
+                            if (consumerUnitCostumer.UC != null && consumerUnitCostumer.UC != "")
+                            {
+                                var consumerUnitCostumerExist = await _iConsumerUnitCostumerRepository.GetByCustomerIdUCAsync(consumerUnitCostumer.UC, customerAdd.Id);
+
+                                if (consumerUnitCostumerExist == null)
+                                {
+                                    consumerUnitCostumer.CustumerId = customerAdd.Id;
+
+                                    var consumerUnitCostumerAdd = await _iConsumerUnitCostumerRepository.CreateAsync(consumerUnitCostumer);
+                                    await _iConsumerUnitCostumerRepository.SaveAsync();
+                                }
+                            }
+
+                            var addresExist = await _iAddressRepository.GetByCepNumeroCustomerAsync(address.CEP, address.Numero, customerAdd.Id);
+
+                            if (addresExist == null)
+                            {
+                                address.CustomerId = customerAdd.Id;
+
+                                var addresAdd = await _iAddressRepository.CreateAsync(address);
+                                await _iAddressRepository.SaveAsync();
+                            }
                         }
                     }
                 }
             }
             else
             {
-                var addresExist = await _iAddressRepository.GetByCepNumeroCustomerAsync(address.CEP, address.Numero, customer.Id);
+                var addresExist = await _iAddressRepository.GetByCepNumeroCustomerAsync(address.CEP, address.Numero, customerExist.Id);
 
                 if (addresExist == null)
                 {
+                    address.CustomerId = customerExist.Id;
                     var addresAdd = await _iAddressRepository.CreateAsync(address);
                     await _iAddressRepository.SaveAsync();
                 }
-            }
 
+                if (consumerUnitCostumer.UC != null && consumerUnitCostumer.UC != "")
+                {
+                    var consumerUnitCostumerExist = await _iConsumerUnitCostumerRepository.GetByCustomerIdUCAsync(consumerUnitCostumer.UC, customerExist.Id);
+
+                    if (consumerUnitCostumerExist == null)
+                    {
+                        consumerUnitCostumer.CustumerId = customerExist.Id;
+
+                        var consumerUnitCostumerAdd = await _iConsumerUnitCostumerRepository.CreateAsync(consumerUnitCostumer);
+                        await _iConsumerUnitCostumerRepository.SaveAsync();
+                    }
+                }
+
+            }
             returnResponseDto.Error = false;
             returnResponseDto.StatusCode = 200;
             returnResponseDto.Data = customer;
+
 
             return returnResponseDto;
         }

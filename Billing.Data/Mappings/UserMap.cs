@@ -88,6 +88,18 @@ namespace MoveEnergia.Billing.Data.Mappings
             builder.Property(x => x.ConcurrencyStamp)
                    .HasColumnName("ConcurrencyStamp")
                    .IsRequired(false);
+
+            builder.Property(x => x.CreationTime)
+                   .HasColumnName("CreationTime")
+                   .IsRequired(true);
+
+            builder.Property(x => x.IsDelete)
+                   .HasColumnName("IsDeleted")
+                   .IsRequired(true);
+
+            builder.Property(x => x.IsDelete)
+                  .HasColumnName("IsDeleted")
+                  .IsRequired(true);
         }
     }
 }

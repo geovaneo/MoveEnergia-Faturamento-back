@@ -159,15 +159,29 @@ namespace MoveEnergia.RdStation.Adapter
 
                             foreach (var itemDeal in listDeals.deals)
                             {
-                                var dictyDeal = itemDeal.deal_custom_fields.ToDictionary(x => x.custom_field_id, y => y.value?.ToString() ?? string.Empty).ToList();
+
+                                var dictyDeal = itemDeal.deal_custom_fields
+                                    .GroupBy(x => x.custom_field_id)
+                                    .ToDictionary(
+                                        g => g.Key,
+                                        g => g.Last().value?.ToString() ?? string.Empty
+                                    ).ToList();
 
                                 if (dictyDeal != null && dictyDeal.Count > 0)
                                 {
                                     var isCustomer = dictyDeal.Exists(kv =>
-                                                                       kv.Key == _rdStationIntegrationCustomer.KeyCustomer &&
-                                                                       kv.Value == _rdStationIntegrationCustomer.ValueCustomer);
+                                                                        kv.Key == _rdStationIntegrationCustomer.KeyCustomer &&
+                                                                        kv.Value == _rdStationIntegrationCustomer.ValueCustomer);
+                                    var isRS = dictyDeal.Exists(kv =>
+                                                                kv.Key == "6176e7009ed1b10013bcebba" &&
+                                                                kv.Value == "RS");
 
-                                    if (isCustomer)
+                                    var isCidade = dictyDeal.Exists(kv =>
+                                                                kv.Key == "6176e6f7fce5e60016590117" &&
+                                                                kv.Value == "PORTO ALEGRE");
+
+
+                                    if (isCustomer && isRS  && isCidade)
                                     {
 
                                         var listCustomer = dictyDeal.ToDictionary(kv => kv.Key, kv => kv.Value);
@@ -189,14 +203,18 @@ namespace MoveEnergia.RdStation.Adapter
                                                     TenantId = customerData.User.TenantId,
                                                     UserName = customerData.User.UserName,
                                                     Name = customerData.User.Name,
-                                                    Surname = customerData.User.UserName,
+                                                    Surname = customerData.User.Surname,
                                                     PasswordHash = customerData.User.PasswordHash,
                                                     PhoneNumberConfirmed = customerData.User.PhoneNumberConfirmed,
                                                     EmailConfirmed = customerData.User.EmailConfirmed,
                                                     IsActive = customerData.User.IsActive,
                                                     AccessFailedCount = customerData.User.AccessFailedCount,
                                                     NormalizedEmail = customerData.User.NormalizedEmail,
-                                                    NormalizedUserName = customerData.User.NormalizedUserName
+                                                    NormalizedUserName = customerData.User.NormalizedUserName,
+                                                    Email = customerData.User.Email,
+                                                    CreationTime = DateTime.Now,
+                                                    IsDelete = false,
+                                                   
                                                 };
                                             }
                                             else
@@ -215,7 +233,8 @@ namespace MoveEnergia.RdStation.Adapter
                                                     Code = customerData.Code,
                                                     TipoCustomer = customerData.TipoCustomer,
                                                     TenantId = customerData.TenantId,
-                                                    Mercado = customerData.Mercado
+                                                    Mercado = customerData.Mercado,
+                                                    CreationTime = DateTime.Now
                                                 };
                                             }
                                             else
@@ -227,7 +246,7 @@ namespace MoveEnergia.RdStation.Adapter
                                             {
                                                 address = new Address()
                                                 {
-                                                    Id = customerData.Adress.Id,
+                                                    //Id = customerData.Adress.Id,
                                                     CEP = customerData.Adress.CEP,
                                                     Logradouro = customerData.Adress.Logradouro,
                                                     Numero = customerData.Adress.Numero,
@@ -242,7 +261,13 @@ namespace MoveEnergia.RdStation.Adapter
                                                 //erro
                                             }
 
-                                            var customerAdd = await _iRdStationIntegrationService.SetCustomerSync(customer, address, user);
+                                            ConsumerUnitCustumer consumerUnitCostumer = new ConsumerUnitCustumer()
+                                            {
+                                                UC = customerData.UC,
+                                                CreateDate = DateTime.Now
+                                            };
+
+                                            var customerAdd = await _iRdStationIntegrationService.SetCustomerSync(customer, address, user, consumerUnitCostumer);
 
                                         }
                                     }

@@ -9,7 +9,8 @@ namespace MoveEnergia.Billing.Core.Entity
         public string Surname { get; set; }
         public int? TenantId { get; set; }
         public bool IsActive { get; set; }
-
+        public DateTime CreationTime { get; set; }
+        public bool IsDelete {  get; set; }
         public override string Email { get; set; }
         public override string PasswordHash { get; set; }
         public override bool EmailConfirmed { get; set; }
