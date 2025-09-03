@@ -1,7 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
-
-namespace MoveEnergia.Billing.Core.Entity
+﻿namespace MoveEnergia.Billing.Core.Entity
 {
     public class City
     {
@@ -9,8 +6,6 @@ namespace MoveEnergia.Billing.Core.Entity
         public string Nome { get; set; }
         public int UFId { get; set; }
         public virtual FederativeUnit? UF { get; set; }
-
-        [JsonIgnore]
-        public virtual Address? Address { get; set; }    
+        public virtual List<Address> Address { get; set; }    
     }
 }
