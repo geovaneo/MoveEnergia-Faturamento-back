@@ -16,7 +16,7 @@ namespace MoveEnergia.Billing.Data.Repository
 
             var result = _context.Set<ConsumerUnitCustumer>().AsNoTracking()
                                   .Where(x => x.UC == UC &&
-                                              x.CustumerId == customerId);
+                                              x.CustomerId == customerId);
 
             return result.FirstOrDefault();
         }

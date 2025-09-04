@@ -17,8 +17,8 @@ namespace MoveEnergia.Billing.Data.Mappings
                    .HasColumnName("Id")
                    .IsRequired(true);
 
-            builder.Property(x => x.CustumerId)
-                   .HasColumnName("CustumerId")
+            builder.Property(x => x.CustomerId)
+                   .HasColumnName("CustomerId")
                    .IsRequired(true);
 
             builder.Property(x => x.UC)

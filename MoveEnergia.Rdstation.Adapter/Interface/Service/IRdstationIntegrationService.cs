@@ -10,5 +10,6 @@ namespace MoveEnergia.RdStation.Adapter.Interface.Service
         Task<ReturnResponseDto> FetchUnidadesFromRdStationAsync(string dealId, bool isStage, int page = 0, int limit = 1);
         Task<ReturnResponseDto> MappingDealToCustomer(Dictionary<string, string> fieldsDeal, DealsResponseDto dealsResponseDto);
         Task<ReturnResponseDto> SetCustomerSync(Customer customer, Address address, User user, ConsumerUnitCustumer consumerUnitCostumer);
+        Task<List<Deals>> GetAllDealsAsync();
     }
 }

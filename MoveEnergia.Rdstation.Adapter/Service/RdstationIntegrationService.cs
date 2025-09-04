@@ -25,7 +25,7 @@ namespace MoveEnergia.Rdstation.Adapter.Service
         private readonly ICustomerRepository _iCustomerRepository;
         private readonly IUserRepository _iUserRepository;
         private readonly IConsumerUnitCustumerRepository _iConsumerUnitCostumerRepository;
-
+        private readonly IDealRepository _iDealRepository;
         public RdStationIntegrationService(ILogger<RdStationIntegrationService> logger,
                                            IHttpService httpService,
                                            IOptions<RdStationConfiguration> rdStationConfiguration,
@@ -35,7 +35,8 @@ namespace MoveEnergia.Rdstation.Adapter.Service
                                            IAddressRepository iAddressRepository,
                                            ICustomerRepository iCustomerRepository,
                                            IUserRepository iUserRepository,
-                                           IConsumerUnitCustumerRepository iConsumerUnitCostumerRepository
+                                           IConsumerUnitCustumerRepository iConsumerUnitCostumerRepository,
+                                           IDealRepository iDealRepository
                                           )
         {
             _logger = logger;
@@ -48,6 +49,7 @@ namespace MoveEnergia.Rdstation.Adapter.Service
             _iCustomerRepository = iCustomerRepository;
             _iUserRepository = iUserRepository;
             _iConsumerUnitCostumerRepository = iConsumerUnitCostumerRepository;
+            _iDealRepository = iDealRepository;
         }
         public async Task<ReturnResponseDto> GetCellphoneNumbersAsync(string dealId)
         {
@@ -282,7 +284,7 @@ namespace MoveEnergia.Rdstation.Adapter.Service
 
                                 if (consumerUnitCostumerExist == null)
                                 {
-                                    consumerUnitCostumer.CustumerId = customerAdd.Id;
+                                    consumerUnitCostumer.CustomerId = customerAdd.Id;
 
                                     var consumerUnitCostumerAdd = await _iConsumerUnitCostumerRepository.CreateAsync(consumerUnitCostumer);
                                     await _iConsumerUnitCostumerRepository.SaveAsync();
@@ -319,7 +321,7 @@ namespace MoveEnergia.Rdstation.Adapter.Service
 
                     if (consumerUnitCostumerExist == null)
                     {
-                        consumerUnitCostumer.CustumerId = customerExist.Id;
+                        consumerUnitCostumer.CustomerId = customerExist.Id;
 
                         var consumerUnitCostumerAdd = await _iConsumerUnitCostumerRepository.CreateAsync(consumerUnitCostumer);
                         await _iConsumerUnitCostumerRepository.SaveAsync();
@@ -333,6 +335,11 @@ namespace MoveEnergia.Rdstation.Adapter.Service
 
 
             return returnResponseDto;
+        }
+        public async Task<List<Deals>> GetAllDealsAsync()
+        {
+            var registro = await _iDealRepository.GetAll();
+            return registro.ToList();
         }
     }
 }

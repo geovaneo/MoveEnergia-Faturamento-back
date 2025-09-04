@@ -4,16 +4,10 @@ using Microsoft.Extensions.Options;
 using MoveEnergia.Billing.Core.Dto.Request;
 using MoveEnergia.Billing.Core.Dto.Response;
 using MoveEnergia.Billing.Core.Entity;
-using MoveEnergia.Billing.Core.Enum;
-using MoveEnergia.Rdstation.Adapter.Configuration;
 using MoveEnergia.RdStation.Adapter.Configuration;
 using MoveEnergia.RdStation.Adapter.Dto.Response;
 using MoveEnergia.RdStation.Adapter.Interface.Adapter;
 using MoveEnergia.RdStation.Adapter.Interface.Service;
-using System.Linq;
-using System.Runtime.ConstrainedExecution;
-using System.Xml.Linq;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MoveEnergia.RdStation.Adapter
 {
@@ -142,148 +136,176 @@ namespace MoveEnergia.RdStation.Adapter
             try
             {
                 string nextPage = "";
+                int limit = requestDto.Records;
+                int totalRecords =  0;
+                int totalPages = 0;
+                int page = 1;
 
-                while (true)
+                var registros = await _iRdStationIntegrationService.FetchUnidadesPageAsync(page, limit, nextPage);
+
+                if (registros != null && registros.Data != null)
                 {
-                    var registros = await _iRdStationIntegrationService.FetchUnidadesPageAsync(0, requestDto.Records, nextPage);
+                    var dealData = (RdStationUnidadeConsumidoraResponseDto)registros.Data;
+                    totalRecords = dealData.total;
+                    totalPages = (int)Math.Ceiling((double)totalRecords / limit);
 
-                    if (registros != null && registros.Data == null)
-                        break;
-
-                    if (registros != null &&  registros.Data != null)
+                    do
                     {
-                        var listDeals = (RdStationUnidadeConsumidoraResponseDto)registros.Data;
 
-                        if (listDeals.deals != null && listDeals.deals.Count > 0)
+                        if (registros != null && registros.Data != null)
                         {
+                            var listDeals = (RdStationUnidadeConsumidoraResponseDto)registros.Data;
 
-                            foreach (var itemDeal in listDeals.deals)
+                            if (listDeals.deals != null && listDeals.deals.Count > 0)
                             {
 
-                                var dictyDeal = itemDeal.deal_custom_fields
-                                    .GroupBy(x => x.custom_field_id)
-                                    .ToDictionary(
-                                        g => g.Key,
-                                        g => g.Last().value?.ToString() ?? string.Empty
-                                    ).ToList();
-
-                                if (dictyDeal != null && dictyDeal.Count > 0)
+                                foreach (var itemDeal in listDeals.deals)
                                 {
-                                    var isCustomer = dictyDeal.Exists(kv =>
-                                                                        kv.Key == _rdStationIntegrationCustomer.KeyCustomer &&
-                                                                        kv.Value == _rdStationIntegrationCustomer.ValueCustomer);
-                                    var isRS = dictyDeal.Exists(kv =>
-                                                                kv.Key == "6176e7009ed1b10013bcebba" &&
-                                                                kv.Value == "RS");
 
-                                    var isCidade = dictyDeal.Exists(kv =>
-                                                                kv.Key == "6176e6f7fce5e60016590117" &&
-                                                                kv.Value == "PORTO ALEGRE");
+                                    var dictyDeal = itemDeal.deal_custom_fields
+                                        .GroupBy(x => x.custom_field_id)
+                                        .ToDictionary(
+                                            g => g.Key,
+                                            g => g.Last().value?.ToString() ?? string.Empty
+                                        ).ToList();
 
-
-                                    if (isCustomer && isRS  && isCidade)
+                                    if (dictyDeal != null && dictyDeal.Count > 0)
                                     {
+                                        var isCustomer = dictyDeal.Exists(kv =>
+                                                                            kv.Key == _rdStationIntegrationCustomer.KeyCustomer &&
+                                                                            kv.Value == _rdStationIntegrationCustomer.ValueCustomer);
+                                        var isRS = dictyDeal.Exists(kv =>
+                                                                    kv.Key == "6176e7009ed1b10013bcebba" &&
+                                                                    kv.Value == "RS");
 
-                                        var listCustomer = dictyDeal.ToDictionary(kv => kv.Key, kv => kv.Value);
+                                        var isCidade = dictyDeal.Exists(kv =>
+                                                                    kv.Key == "6176e6f7fce5e60016590117" &&
+                                                                    kv.Value == "PORTO ALEGRE");
 
-                                        var customerMap = await _iRdStationIntegrationService.MappingDealToCustomer(listCustomer, itemDeal);
 
-                                        if(customerMap.Data != null)
+                                        if (isCustomer && isRS && isCidade)
                                         {
-                                            var customerData = (RdCustomerResponseDto)customerMap.Data;
 
-                                            User user = new User();
-                                            Customer customer = new Customer();
-                                            Address address = new Address();
+                                            var listCustomer = dictyDeal.ToDictionary(kv => kv.Key, kv => kv.Value);
 
-                                            if (customerData.User != null)
+                                            var customerMap = await _iRdStationIntegrationService.MappingDealToCustomer(listCustomer, itemDeal);
+
+                                            if (customerMap.Data != null)
                                             {
-                                                user = new User()
+                                                var customerData = (RdCustomerResponseDto)customerMap.Data;
+
+                                                User user = new User();
+                                                Customer customer = new Customer();
+                                                Address address = new Address();
+
+                                                if (customerData.User != null)
                                                 {
-                                                    TenantId = customerData.User.TenantId,
-                                                    UserName = customerData.User.UserName,
-                                                    Name = customerData.User.Name,
-                                                    Surname = customerData.User.Surname,
-                                                    PasswordHash = customerData.User.PasswordHash,
-                                                    PhoneNumberConfirmed = customerData.User.PhoneNumberConfirmed,
-                                                    EmailConfirmed = customerData.User.EmailConfirmed,
-                                                    IsActive = customerData.User.IsActive,
-                                                    AccessFailedCount = customerData.User.AccessFailedCount,
-                                                    NormalizedEmail = customerData.User.NormalizedEmail,
-                                                    NormalizedUserName = customerData.User.NormalizedUserName,
-                                                    Email = customerData.User.Email,
-                                                    CreationTime = DateTime.Now,
-                                                    IsDelete = false,
-                                                   
-                                                };
-                                            }
-                                            else
-                                            {
-                                                //error
-                                            }
+                                                    user = new User()
+                                                    {
+                                                        TenantId = customerData.User.TenantId,
+                                                        UserName = customerData.User.UserName,
+                                                        Name = customerData.User.Name,
+                                                        Surname = customerData.User.Surname,
+                                                        PasswordHash = customerData.User.PasswordHash,
+                                                        PhoneNumberConfirmed = customerData.User.PhoneNumberConfirmed,
+                                                        EmailConfirmed = customerData.User.EmailConfirmed,
+                                                        IsActive = customerData.User.IsActive,
+                                                        AccessFailedCount = customerData.User.AccessFailedCount,
+                                                        NormalizedEmail = customerData.User.NormalizedEmail,
+                                                        NormalizedUserName = customerData.User.NormalizedUserName,
+                                                        Email = customerData.User.Email,
+                                                        CreationTime = DateTime.Now,
+                                                        IsDelete = false,
 
-                                            if (customerData != null)
-                                            {
-                                                customer = new Customer()
+                                                    };
+                                                }
+                                                else
                                                 {
-                                                    Id = customerData.Id,
-                                                    UserId = customerData.UserId,
-                                                    Name = customerData.Name,
-                                                    RazoSocial = customerData.RazoSocial,
-                                                    Code = customerData.Code,
-                                                    TipoCustomer = customerData.TipoCustomer,
-                                                    TenantId = customerData.TenantId,
-                                                    Mercado = customerData.Mercado,
-                                                    CreationTime = DateTime.Now
-                                                };
-                                            }
-                                            else
-                                            {
-                                                //erro
-                                            }
+                                                    //error
+                                                }
 
-                                            if (customerData.Adress != null)
-                                            {
-                                                address = new Address()
+                                                if (customerData != null)
                                                 {
-                                                    //Id = customerData.Adress.Id,
-                                                    CEP = customerData.Adress.CEP,
-                                                    Logradouro = customerData.Adress.Logradouro,
-                                                    Numero = customerData.Adress.Numero,
-                                                    Complemento = customerData.Adress.Complemento,
-                                                    Bairro = customerData.Adress.Bairro,
-                                                    CityId = customerData.Adress.CityId,
-                                                    CustomerId = customerData.Adress.CustomerId
+                                                    customer = new Customer()
+                                                    {
+                                                        Id = customerData.Id,
+                                                        UserId = customerData.UserId,
+                                                        Name = customerData.Name,
+                                                        RazoSocial = customerData.RazoSocial,
+                                                        Code = customerData.Code,
+                                                        TipoCustomer = customerData.TipoCustomer,
+                                                        TenantId = customerData.TenantId,
+                                                        Mercado = customerData.Mercado,
+                                                        CreationTime = DateTime.Now
+                                                    };
+                                                }
+                                                else
+                                                {
+                                                    //erro
+                                                }
+
+                                                if (customerData.Adress != null)
+                                                {
+                                                    address = new Address()
+                                                    {
+                                                        //Id = customerData.Adress.Id,
+                                                        CEP = customerData.Adress.CEP,
+                                                        Logradouro = customerData.Adress.Logradouro,
+                                                        Numero = customerData.Adress.Numero,
+                                                        Complemento = customerData.Adress.Complemento,
+                                                        Bairro = customerData.Adress.Bairro,
+                                                        CityId = customerData.Adress.CityId,
+                                                        CustomerId = customerData.Adress.CustomerId
+                                                    };
+                                                }
+                                                else
+                                                {
+                                                    //erro
+                                                }
+
+                                                ConsumerUnitCustumer consumerUnitCostumer = new ConsumerUnitCustumer()
+                                                {
+                                                    UC = customerData.UC,
+                                                    CreateDate = DateTime.Now
                                                 };
+
+                                                var customerAdd = await _iRdStationIntegrationService.SetCustomerSync(customer, address, user, consumerUnitCostumer);
+
                                             }
-                                            else
-                                            {
-                                                //erro
-                                            }
-
-                                            ConsumerUnitCustumer consumerUnitCostumer = new ConsumerUnitCustumer()
-                                            {
-                                                UC = customerData.UC,
-                                                CreateDate = DateTime.Now
-                                            };
-
-                                            var customerAdd = await _iRdStationIntegrationService.SetCustomerSync(customer, address, user, consumerUnitCostumer);
-
                                         }
                                     }
                                 }
                             }
+
+                            if (page == totalPages)
+                            {
+                                page = -1;
+                            }
+                            else
+                            {
+                                page++;
+
+                                registros = await _iRdStationIntegrationService.FetchUnidadesPageAsync(page, limit, nextPage);
+
+                                _logger.LogInformation($"Pagina: {page} de {totalPages}");
+                            }
+                            
                         }
-                        nextPage = listDeals.next_page;
+                        else
+                        {
+                            _logger.LogCritical("Objeto contendo dados veio vazio ou null");
+                            break;
+                        }
                     }
-                    else
-                    {
-                        break;
-                    }                   
+                    while (page > -1);
+
                 }
+
             }
             catch (Exception ex)
             {
+                _logger.LogCritical($"Erro: {ex.Message}");
+
                 returnResponseDto.Error = true;
                 returnResponseDto.StatusCode = 500;
                 returnResponseDto.Data = null;
@@ -296,5 +318,32 @@ namespace MoveEnergia.RdStation.Adapter
 
             return returnResponseDto;
         }
+        public async Task<ReturnResponseDto> SyncCustomerAsync(SyncCustomerRequestDto requestDto)
+        {
+            ReturnResponseDto returnResponseDto = new ReturnResponseDto();
+            returnResponseDto.Erros = new List<ReturnResponseErrorDto>();
+
+            try
+            {
+                var registros = _iRdStationIntegrationService.GetAllDealsAsync();
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical($"Erro: {ex.Message}");
+
+                returnResponseDto.Error = true;
+                returnResponseDto.StatusCode = 500;
+                returnResponseDto.Data = null;
+                returnResponseDto.Erros?.Add(new ReturnResponseErrorDto()
+                {
+                    ErrorCode = 500,
+                    ErrorMessage = ex.Message
+                });
+            }
+
+            return returnResponseDto;
+        }
+
     }
 }

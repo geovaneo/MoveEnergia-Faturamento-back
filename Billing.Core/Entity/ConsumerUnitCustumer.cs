@@ -3,7 +3,7 @@
     public class ConsumerUnitCustumer
     {
         public int Id { get; set; }
-        public int CustumerId { get; set; }
+        public int CustomerId { get; set; }
         public string UC { get; set; }
         public DateTime CreateDate { get; set; }
     }
