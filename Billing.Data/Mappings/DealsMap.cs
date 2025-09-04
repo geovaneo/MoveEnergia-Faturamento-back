@@ -86,7 +86,7 @@ namespace MoveEnergia.Billing.Data.Mappings
                    .IsRequired(false);
 
             builder.Property(x => x.Stage)
-                   .HasColumnName("Deal_pipeline_name")
+                   .HasColumnName("Deal_stage_name")
                    .IsRequired(false);
 
             builder.Property(x => x.DealsWin)
@@ -135,6 +135,10 @@ namespace MoveEnergia.Billing.Data.Mappings
 
             builder.Property(x => x.DescVermelha2)
                    .HasColumnName("Deal_custom_field_DescVermelha2")
+                   .IsRequired(false);
+           
+            builder.Property(x => x.LastModifierUserID)
+                   .HasColumnName("LastModifierUserId")
                    .IsRequired(false);
         }
     }

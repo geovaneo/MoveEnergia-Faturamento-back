@@ -325,7 +325,7 @@ namespace MoveEnergia.RdStation.Adapter
 
             try
             {
-                var registros = _iRdStationIntegrationService.GetAllDealsAsync();
+                var registros = await _iRdStationIntegrationService.GetAllDealsAsync();
 
             }
             catch (Exception ex)
