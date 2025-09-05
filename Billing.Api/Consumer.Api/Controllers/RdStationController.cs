@@ -38,9 +38,9 @@ namespace MoveEnergia.Billing.Api.Controllers
         [ProducesResponseType(typeof(ReturnResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetCellphoneNumbersAsync(string dealId)
+        public async Task<IActionResult> GetContactsAsync(string dealId)
         {
-            var retornoDto = await _iRdstationIntegrationAdapter.GetCellphoneNumbersAsync(dealId);
+            var retornoDto = await _iRdstationIntegrationAdapter.GetContactsAsync(dealId);
             return StatusCode(retornoDto.StatusCode, retornoDto);
         }
 

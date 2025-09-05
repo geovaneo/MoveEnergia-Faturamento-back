@@ -12,5 +12,8 @@ namespace MoveEnergia.RdStation.Adapter.Dto.Response
 
         [JsonPropertyName("phones")]
         public List<ContactPhoneResponseDto> phones { get; set; }
+
+        [JsonPropertyName("emails")]
+        public List<ContactEmailResponseDto> emails { get; set; }
     }
 }

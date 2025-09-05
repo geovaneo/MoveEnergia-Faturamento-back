@@ -4,6 +4,6 @@ namespace MoveEnergia.Billing.Core.Interface.Repository
 {
     public interface IDealRepository : IBaseRepository<Deals>
     {
-
+        Task<List<Deals>> GetByTitularidadeAsync(string titularidade);
     }
 }
