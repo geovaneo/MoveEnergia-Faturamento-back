@@ -10,5 +10,6 @@ namespace MoveEnergia.RdStation.Adapter.Interface.Adapter
         Task<ReturnResponseDto> FetchUnidadesFromRdStationAsync(string dealId, bool isStage, int page = 0, int limit = 1);
         Task<ReturnResponseDto> ProcessIntegrationCustomerAsync(ProcessIntegrationCustomerRequestDto requestDto);
         Task<ReturnResponseDto> SyncCustomerAsync(SyncCustomerRequestDto requestDto);
+        Task<ReturnResponseDto> SyncCustomerListUCAsync(string listUCs);
     }
 }

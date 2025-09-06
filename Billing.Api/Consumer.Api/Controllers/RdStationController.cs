@@ -71,11 +71,21 @@ namespace MoveEnergia.Billing.Api.Controllers
         [ProducesResponseType(typeof(ReturnResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetAllDealsAsync([FromBody] SyncCustomerRequestDto request)
+        public async Task<IActionResult> SyncCustomerAsync([FromBody] SyncCustomerRequestDto request)
         {
             var retornoDto = await _iRdstationIntegrationAdapter.SyncCustomerAsync(request);
             return StatusCode(retornoDto.StatusCode, retornoDto);
         }
 
+        [HttpPost]
+        [Route("Sync/Customer/UCs")]
+        [ProducesResponseType(typeof(ReturnResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> SyncCustomerUCAsync([FromBody] string listUCs)
+        {
+            var retornoDto = await _iRdstationIntegrationAdapter.SyncCustomerListUCAsync(listUCs);
+            return StatusCode(retornoDto.StatusCode, retornoDto);
+        }
     }
 }

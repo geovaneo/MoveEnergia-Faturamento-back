@@ -341,6 +341,12 @@ namespace MoveEnergia.Rdstation.Adapter.Service
             var registro = await _iDealRepository.GetByTitularidadeAsync(titularidade);
             return registro.ToList();
         }
+
+        public async Task<List<Deals>> GetByUCValidateAsync(List<string> listUC)
+        {
+            var registro = await _iDealRepository.GetByUCValidateAsync(listUC);
+            return registro.ToList();
+        }
         public async Task<ReturnResponseDto> MappingDealToCustomer(Deals deal)
         {
             ReturnResponseDto returnResponseDto = new ReturnResponseDto();
@@ -360,11 +366,20 @@ namespace MoveEnergia.Rdstation.Adapter.Service
 
                 if (contactData.contacts != null)
                 {
-                    var contactDeal = contactData.contacts.OrderByDescending(c => c.id).FirstOrDefault();
+                    var contactDeal = contactData.contacts.Where(c => c.emails != null && 
+                                                                      c.emails.Any(e => !string.IsNullOrEmpty(e.email)))
+                                                          .OrderByDescending(c => c.id).FirstOrDefault();
 
                     if (contactDeal != null)
                     {
                         contactMail = contactDeal.emails.OrderByDescending(c => c.id).FirstOrDefault();
+                    }
+                    else
+                    {
+                        contactMail = new ContactEmailResponseDto()
+                        {
+                            email = $"{deal.UC}_email@mail{deal.UC}.com.br"
+                        }; 
                     }
                 }
 
@@ -452,6 +467,22 @@ namespace MoveEnergia.Rdstation.Adapter.Service
                                 };
 
                                 customer.Adress = adress;
+                            }
+                            else
+                            {
+                                CityId = 1004;
+
+                                adress = new RdCustomerAdressResponseDto()
+                                {
+                                    CEP = "99999-000",
+                                    CityId = CityId,
+                                    Bairro = "Centro",
+                                    Logradouro = $"Logradouro Padraão da UC: {customer.UC}",
+                                    Numero = "1"
+                                };
+
+                                customer.Adress = adress;
+
                             }
                         }
                     }

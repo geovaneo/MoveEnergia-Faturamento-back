@@ -13,5 +13,6 @@ namespace MoveEnergia.RdStation.Adapter.Interface.Service
         Task<List<Deals>> GetByTitularidadeAsync(string titularidade);
         Task<ReturnResponseDto> MappingDealToCustomerApi(Dictionary<string, string> fieldsDeal, DealsResponseDto dealsResponseDto);
         Task<ReturnResponseDto> GetDealToIdAsync(string dealId);
+        Task<List<Deals>> GetByUCValidateAsync(List<string> listUC);
     }
 }

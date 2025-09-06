@@ -17,5 +17,14 @@ namespace MoveEnergia.Billing.Data.Repository
 
             return result.ToList();
         }
+
+        public async Task<List<Deals>> GetByUCValidateAsync(List<string> listUC)
+        {
+
+            var result = _context.Set<Deals>().AsNoTracking()
+                                  .Where(x => listUC.Contains(x.UC));
+
+            return result.ToList();
+        }
     }
 }
