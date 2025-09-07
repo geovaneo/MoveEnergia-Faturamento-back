@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using MoveEnergia.Billing.Core.Dto;
 
-public static class Validation
+public static class ValidationExtensions
 {
     public static async Task<List<ReturnResponseErrorDto>?> ProcessValidateAsync<T>(T entity, IValidator<T> validator)
     {

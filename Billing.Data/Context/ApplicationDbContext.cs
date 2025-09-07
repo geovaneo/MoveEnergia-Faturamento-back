@@ -18,6 +18,7 @@ namespace MoveEnergia.Billing.Data.Context
         public DbSet<City> City { get; set; }
         public DbSet<Customer> Customer { get; set; }
         public DbSet<Address> Address { get; set; }
+        public DbSet<Deals> deals { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

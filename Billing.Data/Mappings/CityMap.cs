@@ -25,9 +25,9 @@ namespace MoveEnergia.Billing.Data.Mappings
                    .HasColumnName("UFId")
                    .IsRequired(true);
 
-            //builder.HasOne(c => c.Address)
-            //       .WithOne(a => a.City)
-            //       .HasForeignKey<Address>(a => a.Id);
+            builder.HasMany(c => c.Address)
+                    .WithOne(a => a.City)
+                    .HasForeignKey(a => a.CityId);
         }
     }
 }

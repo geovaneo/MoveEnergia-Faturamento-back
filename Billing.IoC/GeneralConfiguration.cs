@@ -33,6 +33,8 @@ namespace MoveEnergia.Billing.IoC
             services.AddScoped<ICustomerRepository, CustomerRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IConsumerUnitCustumerRepository, ConsumerUnitCustumerRepository>();
+            services.AddScoped<IDealRepository, DealRepository>();
+            services.AddScoped<IConsumerUnitRepository, ConsumerUnitRepository>();            
         }
 
         public static void AddGeneralServiceConfiguration(this IServiceCollection services, IConfiguration configuration)

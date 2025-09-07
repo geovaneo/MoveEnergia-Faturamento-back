@@ -1,6 +1,6 @@
 ﻿namespace MoveEnergia.Billing.Helper
 {
-    public static class Strings
+    public static class StringsExtensions
     {
         public static string FormatToValueCPFCNPJ(string value)
         {

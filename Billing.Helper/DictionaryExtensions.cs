@@ -1,6 +1,6 @@
 ﻿namespace MoveEnergia.Billing.Helper
 {
-    public static class DictionaryString
+    public static class DictionaryExtensions
     {
         public static string GetValue(Dictionary<string, string> dict, string fieldName)
         {

@@ -38,9 +38,9 @@ namespace MoveEnergia.Billing.Api.Controllers
         [ProducesResponseType(typeof(ReturnResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetCellphoneNumbersAsync(string dealId)
+        public async Task<IActionResult> GetContactsAsync(string dealId)
         {
-            var retornoDto = await _iRdstationIntegrationAdapter.GetCellphoneNumbersAsync(dealId);
+            var retornoDto = await _iRdstationIntegrationAdapter.GetContactsAsync(dealId);
             return StatusCode(retornoDto.StatusCode, retornoDto);
         }
 
@@ -71,11 +71,21 @@ namespace MoveEnergia.Billing.Api.Controllers
         [ProducesResponseType(typeof(ReturnResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> ProcessIntegrationCustomerAsync([FromBody] ProcessIntegrationCustomerRequestDto request)
+        public async Task<IActionResult> SyncCustomerAsync([FromBody] SyncCustomerRequestDto request)
         {
-            var retornoDto = await _iRdstationIntegrationAdapter.ProcessIntegrationCustomerAsync(request);
+            var retornoDto = await _iRdstationIntegrationAdapter.SyncCustomerAsync(request);
             return StatusCode(retornoDto.StatusCode, retornoDto);
         }
 
+        [HttpPost]
+        [Route("Sync/Customer/STG/UCs")]
+        [ProducesResponseType(typeof(ReturnResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> SyncCustomerUCAsync([FromBody] string listUCs)
+        {
+            var retornoDto = await _iRdstationIntegrationAdapter.SyncCustomerListUCAsync(listUCs);
+            return StatusCode(retornoDto.StatusCode, retornoDto);
+        }
     }
 }
