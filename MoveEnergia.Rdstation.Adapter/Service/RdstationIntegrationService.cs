@@ -26,6 +26,8 @@ namespace MoveEnergia.Rdstation.Adapter.Service
         private readonly IUserRepository _iUserRepository;
         private readonly IConsumerUnitCustumerRepository _iConsumerUnitCostumerRepository;
         private readonly IDealRepository _iDealRepository;
+        private readonly IConsumerUnitRepository _iconsumerUnitRepository;
+
         public RdStationIntegrationService(ILogger<RdStationIntegrationService> logger,
                                            IHttpService httpService,
                                            IOptions<RdStationConfiguration> rdStationConfiguration,
@@ -36,7 +38,8 @@ namespace MoveEnergia.Rdstation.Adapter.Service
                                            ICustomerRepository iCustomerRepository,
                                            IUserRepository iUserRepository,
                                            IConsumerUnitCustumerRepository iConsumerUnitCostumerRepository,
-                                           IDealRepository iDealRepository
+                                           IDealRepository iDealRepository,
+                                           IConsumerUnitRepository consumerUnitRepository
                                           )
         {
             _logger = logger;
@@ -50,6 +53,7 @@ namespace MoveEnergia.Rdstation.Adapter.Service
             _iUserRepository = iUserRepository;
             _iConsumerUnitCostumerRepository = iConsumerUnitCostumerRepository;
             _iDealRepository = iDealRepository;
+            _iconsumerUnitRepository = consumerUnitRepository;
         }
         public async Task<ReturnResponseDto> GetContactsAsync(string dealId)
         {
@@ -299,6 +303,31 @@ namespace MoveEnergia.Rdstation.Adapter.Service
 
                                 var addresAdd = await _iAddressRepository.CreateAsync(address);
                                 await _iAddressRepository.SaveAsync();
+                            }
+
+
+                            var ucExist = await _iconsumerUnitRepository.GetByUCAsync(consumerUnitCostumer.UC);
+
+                            if (ucExist == null)
+                            {
+                                var consumerUnit = new ConsumerUnit()
+                                {
+                                    Nome = consumerUnitCostumer.UC,
+                                    UC = consumerUnitCostumer.UC,
+                                    UnidadeStatusId = 1,
+                                    StateId = 24,
+                                    SubgroupId = 1,
+                                    TariffModalityId = 1,
+                                    DistributorId = 4,
+                                    CustomerId = customerAdd.Id,
+                                    UserId = user.Id,
+                                    Tipo = 0,
+                                    IsDeleted = false,
+                                    CreationTime = DateTime.Now,
+                                };
+
+                                var ucAdd = await _iconsumerUnitRepository.CreateAsync(consumerUnit);
+                                await _iconsumerUnitRepository.SaveAsync();
                             }
                         }
                     }

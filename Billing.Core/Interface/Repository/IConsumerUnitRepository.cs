@@ -10,5 +10,6 @@ namespace MoveEnergia.Billing.Core.Interface.Repository
         Task<CurrentInvoiceResponseDto> GetCurrentInvoiceByIdUcAsync(int idUC);
         Task<ConsumerUnit> GetConsumerUnitMeasurementByIdUcAsync(int idUc);
         Task<ConsumerUnit> GetConsumerUnitMeasurementByIdUcReferenMonthAsync(int idUc, DateTime referenceDate);
+        Task<ConsumerUnit> GetByUCAsync(string UC);
     }
 }

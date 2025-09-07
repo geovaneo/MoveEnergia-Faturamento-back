@@ -566,7 +566,7 @@ namespace MoveEnergia.RdStation.Adapter
                                         Complemento = customerData.Adress.Complemento,
                                         Bairro = customerData.Adress.Bairro,
                                         CityId = customerData.Adress.CityId,
-                                        CustomerId = customerData.Adress.CustomerId
+                                        CustomerId = customerData.Id
                                     };
                                 }
 

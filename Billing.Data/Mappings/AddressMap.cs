@@ -45,12 +45,8 @@ namespace MoveEnergia.Billing.Data.Mappings
                    .HasColumnName("CustomerId")
                    .IsRequired(true);
 
-            //builder.HasOne(e => e.City)
-            //       .WithOne(e => e.Address)
-            //       .HasForeignKey<Address>(e => e.CityId);
-
             builder.HasOne(e => e.City)
-                   .WithMany(e => e.Address)
+                   .WithMany(c => c.Address)  
                    .HasForeignKey(e => e.CityId);
 
             builder.HasOne(e => e.Customer)
