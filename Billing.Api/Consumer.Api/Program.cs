@@ -1,8 +1,12 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using MoveEnergia.Billing.Data.Context;
 using MoveEnergia.Billing.IoC;
 using Newtonsoft.Json;
+using Serilog;
 using System.Globalization;
 using System.Reflection;
 
@@ -81,6 +85,13 @@ namespace MoveEnergia.Billing.Api
 
             var app = builder.Build();
 
+            string env = app.Environment.IsDevelopment() ? ".Development" : ".Development";
+            Log.Logger = new LoggerConfiguration()
+                .ReadFrom.Configuration(new ConfigurationBuilder()
+                    .AddJsonFile($"appsettings{env}.json")
+                    .Build())
+                .CreateLogger();
+
             app.UseExceptionHandler(config =>
             {
                 config.Run(async context =>
@@ -115,8 +126,13 @@ namespace MoveEnergia.Billing.Api
 
             app.UseAuthorization();
 
-
             app.MapControllers();
+
+            using (var scope = app.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                db.Database.Migrate();
+            }
 
             app.Run();
         }

@@ -2,38 +2,28 @@
 using MoveEnergia.Billing.Core.Dto;
 using MoveEnergia.Billing.Core.Dto.Request;
 using MoveEnergia.RdStation.Adapter.Interface.Adapter;
+using MoveEnergia.RdStation.Adapter.Interface.Service;
+using Serilog;
 using System.Text;
 
 namespace MoveEnergia.Billing.Api.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/RdStation")]
     public class RdStationController : ControllerBase
     {
         private readonly ILogger<RdStationController> _logger;
         private readonly IRdstationIntegrationAdapter _iRdstationIntegrationAdapter;
+        private readonly IRdCargaService _iRdCargaService;
 
-        public RdStationController(ILogger<RdStationController> logger, IRdstationIntegrationAdapter iRdstationIntegrationAdapter)
+        public RdStationController(ILogger<RdStationController> logger, IRdstationIntegrationAdapter iRdstationIntegrationAdapter, IRdCargaService iRdCargaService)
         {
             _logger = logger;
             _iRdstationIntegrationAdapter = iRdstationIntegrationAdapter;
+            _iRdCargaService = iRdCargaService;
         }
 
-        [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [ApiExplorerSettings(IgnoreApi = true)]
-
-        public IActionResult HealthCheck()
-        {
-            StringBuilder informacoes = new StringBuilder();
-            informacoes.AppendLine($"API MoveEnergia Consumer = MoveEnergia.Billing.Api");
-            informacoes.AppendLine($"Situação = Saudável");
-
-            return Ok(informacoes.ToString());
-        }
-
-        [HttpGet]
+        /*[HttpGet]
         [Route("Contacts/{dealId}")]
         [ProducesResponseType(typeof(ReturnResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -85,6 +75,30 @@ namespace MoveEnergia.Billing.Api.Controllers
         public async Task<IActionResult> SyncCustomerUCAsync([FromBody] string listUCs)
         {
             var retornoDto = await _iRdstationIntegrationAdapter.SyncCustomerListUCAsync(listUCs);
+            return StatusCode(retornoDto.StatusCode, retornoDto);
+        }*/
+
+        [HttpGet]
+        [Route("Carga/ListPipelines")]
+        [ProducesResponseType(typeof(ReturnResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> ListPipelines()
+        {
+            Log.Debug("teste");
+            var retornoDto = await _iRdCargaService.GetPipelines();
+            return StatusCode(retornoDto.StatusCode, retornoDto);
+        }
+
+        [HttpPost]
+        [Route("Carga/Address")]
+        [ProducesResponseType(typeof(ReturnResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> CargaEnderecoAsync()
+        {
+            Log.Debug("teste");
+            var retornoDto = await _iRdCargaService.CargaEnderecosAsync(0, 10, "");
             return StatusCode(retornoDto.StatusCode, retornoDto);
         }
     }

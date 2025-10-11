@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using MoveEnergia.Rdstation.Adapter.Interface.Service;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Text;
 
 namespace MoveEnergia.Rdstation.Adapter.Service
@@ -29,6 +30,32 @@ namespace MoveEnergia.Rdstation.Adapter.Service
             var content = await response.Content.ReadAsStringAsync();
 
             return JsonConvert.DeserializeObject<T>(content);
+        }
+
+        public async Task<JObject> GetAsyncToJson(string url)
+        {
+            var client = CreateClient();
+            var response = await client.GetAsync(url);
+
+            if (!response.IsSuccessStatusCode)
+                return default;
+
+            var content = await response.Content.ReadAsStringAsync();
+
+            return JObject.Parse(content);
+        }
+
+        public async Task<JArray> GetAsyncToJsonArray(string url)
+        {
+            var client = CreateClient();
+            var response = await client.GetAsync(url);
+
+            if (!response.IsSuccessStatusCode)
+                return default;
+
+            var content = await response.Content.ReadAsStringAsync();
+
+            return JArray.Parse(content);
         }
 
         public async Task<TResponse?> PostAsync<TRequest, TResponse>(string url, TRequest data)

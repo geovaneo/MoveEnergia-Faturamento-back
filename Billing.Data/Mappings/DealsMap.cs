@@ -136,7 +136,11 @@ namespace MoveEnergia.Billing.Data.Mappings
             builder.Property(x => x.DescVermelha2)
                    .HasColumnName("Deal_custom_field_DescVermelha2")
                    .IsRequired(false);
-           
+
+            builder.Property(x => x.EndRua)
+                   .HasColumnName("Deal_custom_field_EndRua")
+                   .IsRequired(false);
+
             builder.Property(x => x.LastModifierUserID)
                    .HasColumnName("LastModifierUserId")
                    .IsRequired(false);

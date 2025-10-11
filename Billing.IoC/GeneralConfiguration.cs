@@ -45,6 +45,7 @@ namespace MoveEnergia.Billing.IoC
         public static void AddRdStationIntegrationServiceConfiguration(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddScoped<IRdStationIntegrationService, RdStationIntegrationService>();
+            services.AddScoped<IRdCargaService, RdCargaService>();
             services.AddScoped<IHttpService, HttpService>();
         }
         public static void AddGeneralAdapterConfiguration(this IServiceCollection services, IConfiguration configuration)
