@@ -141,6 +141,26 @@ namespace MoveEnergia.Billing.Data.Mappings
                    .HasColumnName("Deal_custom_field_EndRua")
                    .IsRequired(false);
 
+            builder.Property(x => x.EndNumero)
+                   .HasColumnName("Deal_custom_field_EndNumero")
+                   .IsRequired(false);
+
+            builder.Property(x => x.EndComplemento)
+                   .HasColumnName("Deal_custom_field_EndComplemento")
+                   .IsRequired(false);
+
+            builder.Property(x => x.EndBairro)
+                   .HasColumnName("Deal_custom_field_EndBairro")
+                   .IsRequired(false);
+
+            builder.Property(x => x.EndCidade)
+                   .HasColumnName("Deal_custom_field_EndCidade")
+                   .IsRequired(false);
+
+            builder.Property(x => x.EndUF)
+                   .HasColumnName("Deal_custom_field_EndUF")
+                   .IsRequired(false);
+
             builder.Property(x => x.LastModifierUserID)
                    .HasColumnName("LastModifierUserId")
                    .IsRequired(false);

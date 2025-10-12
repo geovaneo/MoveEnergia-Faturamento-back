@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -27,8 +28,11 @@ namespace MoveEnergia.Billing.IoC
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(connectionString)
                        .EnableSensitiveDataLogging()
-                       .LogTo(Console.WriteLine, LogLevel.Information));
+                       .LogTo(Console.WriteLine, LogLevel.Information)
+                       .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning))
+                       );
 
+            
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace MoveEnergia.RdStation.Adapter.Dto.Response
 {
-    public class ReturnResponseDto
+    public class RdReturnResponseDto
     {
         public bool Error { get; set; }
         public int StatusCode { get; set; }

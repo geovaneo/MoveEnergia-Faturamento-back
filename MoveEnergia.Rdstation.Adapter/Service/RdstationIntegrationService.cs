@@ -55,13 +55,13 @@ namespace MoveEnergia.Rdstation.Adapter.Service
             _iDealRepository = iDealRepository;
             _iconsumerUnitRepository = consumerUnitRepository;
         }
-        public async Task<ReturnResponseDto> GetContactsAsync(string dealId)
+        public async Task<RdReturnResponseDto> GetContactsAsync(string dealId)
         {
             string roteApi = $"{_rdStationConfiguration.UrlBase}/deals/{dealId}/contacts?token={_rdStationConfiguration.Token}&limit=200";
 
             var returnHttp = await _httpService.GetAsync<ContactDataResponseDto>(roteApi);
 
-            var returnDto = new ReturnResponseDto()
+            var returnDto = new RdReturnResponseDto()
             {
                 Error = false,
                 StatusCode = 200,
@@ -70,7 +70,7 @@ namespace MoveEnergia.Rdstation.Adapter.Service
 
             return returnDto;
         }
-        public async Task<ReturnResponseDto> FetchUnidadesPageAsync(int page = 0, int limit = 200, string next_page = "")
+        public async Task<RdReturnResponseDto> FetchUnidadesPageAsync(int page = 0, int limit = 200, string next_page = "")
         {
 
             var roteApi = $"{_rdStationConfiguration.UrlBase}/deals?token={_rdStationConfiguration.Token}&page={page}&limit={limit}";
@@ -82,7 +82,7 @@ namespace MoveEnergia.Rdstation.Adapter.Service
 
             var returnHttp = await _httpService.GetAsync<RdStationUnidadeConsumidoraResponseDto>(roteApi);
 
-            var returnDto = new ReturnResponseDto()
+            var returnDto = new RdReturnResponseDto()
             {
                 Error = false,
                 StatusCode = 200,
@@ -91,7 +91,7 @@ namespace MoveEnergia.Rdstation.Adapter.Service
 
             return returnDto;
         }
-        public async Task<ReturnResponseDto> FetchUnidadesFromRdStationAsync(string dealId, bool isStage, int page = 0, int limit = 1)
+        public async Task<RdReturnResponseDto> FetchUnidadesFromRdStationAsync(string dealId, bool isStage, int page = 0, int limit = 1)
         {
             string roteApi = "";
 
@@ -106,7 +106,7 @@ namespace MoveEnergia.Rdstation.Adapter.Service
 
             var returnHttp = await _httpService.GetAsync<RdStationUnidadeConsumidoraResponseDto>(roteApi);
 
-            var returnDto = new ReturnResponseDto()
+            var returnDto = new RdReturnResponseDto()
             {
                 Error = false,
                 StatusCode = 200,
@@ -115,9 +115,9 @@ namespace MoveEnergia.Rdstation.Adapter.Service
 
             return returnDto;
         }
-        public async Task<ReturnResponseDto> MappingDealToCustomerApi(Dictionary<string, string> fieldsDeal, DealsResponseDto dealsResponseDto)
+        public async Task<RdReturnResponseDto> MappingDealToCustomerApi(Dictionary<string, string> fieldsDeal, DealsResponseDto dealsResponseDto)
         {
-            ReturnResponseDto returnResponseDto = new ReturnResponseDto();
+            RdReturnResponseDto returnResponseDto = new RdReturnResponseDto();
             returnResponseDto.Erros = new List<ReturnResponseErrorDto>();
 
             var fieldsIntegration = await _iRdFieldsIntegrationRepository.GetAll();
@@ -255,10 +255,10 @@ namespace MoveEnergia.Rdstation.Adapter.Service
             returnResponseDto.StatusCode = 404;
             return returnResponseDto;
         }
-        public async Task<ReturnResponseDto> SetCustomerSync(Customer customer, Address address, User user, ConsumerUnitCustumer consumerUnitCostumer)
+        public async Task<RdReturnResponseDto> SetCustomerSync(Customer customer, Address address, User user, ConsumerUnitCustumer consumerUnitCostumer)
         {
 
-            ReturnResponseDto returnResponseDto = new ReturnResponseDto();
+            RdReturnResponseDto returnResponseDto = new RdReturnResponseDto();
             returnResponseDto.Erros = new List<ReturnResponseErrorDto>();
 
             var customerExist = await _iCustomerRepository.GetByCodeAsync(customer.Code);
@@ -376,9 +376,9 @@ namespace MoveEnergia.Rdstation.Adapter.Service
             var registro = await _iDealRepository.GetByUCValidateAsync(listUC);
             return registro.ToList();
         }
-        public async Task<ReturnResponseDto> MappingDealToCustomer(Deals deal)
+        public async Task<RdReturnResponseDto> MappingDealToCustomer(Deals deal)
         {
-            ReturnResponseDto returnResponseDto = new ReturnResponseDto();
+            RdReturnResponseDto returnResponseDto = new RdReturnResponseDto();
             returnResponseDto.Erros = new List<ReturnResponseErrorDto>();
 
             RdCustomerUserResponseDto user = new RdCustomerUserResponseDto();   
@@ -533,14 +533,14 @@ namespace MoveEnergia.Rdstation.Adapter.Service
 
             return returnResponseDto;
         }
-        public async Task<ReturnResponseDto> GetDealToIdAsync(string dealId)
+        public async Task<RdReturnResponseDto> GetDealToIdAsync(string dealId)
         {
 
             var roteApi = $"{_rdStationConfiguration.UrlBase}/deals/{dealId}?token={_rdStationConfiguration.Token}";
 
             var returnHttp = await _httpService.GetAsync<DealsResponseDto>(roteApi);
 
-            var returnDto = new ReturnResponseDto()
+            var returnDto = new RdReturnResponseDto()
             {
                 Error = false,
                 StatusCode = 200,

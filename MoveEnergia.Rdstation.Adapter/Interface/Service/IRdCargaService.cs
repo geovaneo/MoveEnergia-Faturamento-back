@@ -6,8 +6,8 @@ namespace MoveEnergia.RdStation.Adapter.Interface.Service
     public interface IRdCargaService
     {
 
-        Task<ReturnResponseDto> GetPipelines();
-        Task<ReturnResponseDto> CargaEnderecosAsync(int page = 0, int limit = 200, string next_page = "");
+        Task<RdReturnResponseDto> GetPipelines();
+        Task<RdReturnResponseDto> CargaEnderecosAsync(int page = 0, int limit = 200, string next_page = "");
 
     }
 }

@@ -31,6 +31,11 @@ namespace MoveEnergia.Billing.Core.Entity
         public string? Titularidade {  get; set; }
         public string? CEP {  get; set; }
         public string? EndRua { get; set; }
+        public string? EndNumero { get; set; }
+        public string? EndComplemento { get; set; }
+        public string? EndBairro { get; set; }
+        public string? EndCidade { get; set; }
+        public string? EndUF { get; set; }
         public string? CoopModalidadeDesconto { get; set; }
         public string? DescAdicionalPercent { get; set; }
         public string? DescAmarela { get; set; }

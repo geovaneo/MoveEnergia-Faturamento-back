@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Billing.Core\MoveEnergia.Billing.Core.csproj" />
+    <ProjectReference Include="..\Billing.Data\MoveEnergia.Billing.Data.csproj" />
     <ProjectReference Include="..\Billing.Helper\MoveEnergia.Billing.Helper.csproj" />
   </ItemGroup>
 

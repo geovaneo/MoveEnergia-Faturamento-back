@@ -98,7 +98,7 @@ namespace MoveEnergia.Billing.Api.Controllers
         public async Task<IActionResult> CargaEnderecoAsync()
         {
             Log.Debug("teste");
-            var retornoDto = await _iRdCargaService.CargaEnderecosAsync(0, 10, "");
+            var retornoDto = await _iRdCargaService.CargaEnderecosAsync(0, 100, "");
             return StatusCode(retornoDto.StatusCode, retornoDto);
         }
     }

@@ -31,9 +31,9 @@ namespace MoveEnergia.RdStation.Adapter
             _rdStationIntegrationCustomer = rdStationIntegrationCustomer.Value;
         }
 
-        public async Task<ReturnResponseDto> GetContactsAsync(string dealId)
+        public async Task<RdReturnResponseDto> GetContactsAsync(string dealId)
         {
-            ReturnResponseDto returnResponseDto = new ReturnResponseDto();
+            RdReturnResponseDto returnResponseDto = new RdReturnResponseDto();
             returnResponseDto.Erros = new List<ReturnResponseErrorDto>();
 
             try
@@ -65,9 +65,9 @@ namespace MoveEnergia.RdStation.Adapter
             return returnResponseDto;
 
         }
-        public async Task<ReturnResponseDto> FetchUnidadesPageAsync(int page = 0, int limit = 200, string next_page = "")
+        public async Task<RdReturnResponseDto> FetchUnidadesPageAsync(int page = 0, int limit = 200, string next_page = "")
         {
-            ReturnResponseDto returnResponseDto = new ReturnResponseDto();
+            RdReturnResponseDto returnResponseDto = new RdReturnResponseDto();
             returnResponseDto.Erros = new List<ReturnResponseErrorDto>();
             
             try
@@ -98,9 +98,9 @@ namespace MoveEnergia.RdStation.Adapter
 
             return returnResponseDto;
         }
-        public async Task<ReturnResponseDto> FetchUnidadesFromRdStationAsync(string dealId, bool isStage, int page = 0, int limit = 1)
+        public async Task<RdReturnResponseDto> FetchUnidadesFromRdStationAsync(string dealId, bool isStage, int page = 0, int limit = 1)
         {
-            ReturnResponseDto returnResponseDto = new ReturnResponseDto();
+            RdReturnResponseDto returnResponseDto = new RdReturnResponseDto();
             returnResponseDto.Erros = new List<ReturnResponseErrorDto>();
 
             try
@@ -131,9 +131,9 @@ namespace MoveEnergia.RdStation.Adapter
 
             return returnResponseDto;
         }
-        public async Task<ReturnResponseDto> ProcessIntegrationCustomerAsync(ProcessIntegrationCustomerRequestDto requestDto)
+        public async Task<RdReturnResponseDto> ProcessIntegrationCustomerAsync(ProcessIntegrationCustomerRequestDto requestDto)
         {
-            ReturnResponseDto returnResponseDto = new ReturnResponseDto();
+            RdReturnResponseDto returnResponseDto = new RdReturnResponseDto();
             returnResponseDto.Erros = new List<ReturnResponseErrorDto>();
 
             try
@@ -321,9 +321,9 @@ namespace MoveEnergia.RdStation.Adapter
 
             return returnResponseDto;
         }
-        public async Task<ReturnResponseDto> SyncCustomerAsync(SyncCustomerRequestDto requestDto)
+        public async Task<RdReturnResponseDto> SyncCustomerAsync(SyncCustomerRequestDto requestDto)
         {
-            ReturnResponseDto returnResponseDto = new ReturnResponseDto();
+            RdReturnResponseDto returnResponseDto = new RdReturnResponseDto();
             returnResponseDto.Erros = new List<ReturnResponseErrorDto>();
 
             try
@@ -463,9 +463,9 @@ namespace MoveEnergia.RdStation.Adapter
 
             return returnResponseDto;
         }
-        public async Task<ReturnResponseDto> SyncCustomerListUCAsync(string listUCs)
+        public async Task<RdReturnResponseDto> SyncCustomerListUCAsync(string listUCs)
         {
-            ReturnResponseDto returnResponseDto = new ReturnResponseDto();
+            RdReturnResponseDto returnResponseDto = new RdReturnResponseDto();
             returnResponseDto.Erros = new List<ReturnResponseErrorDto>();
 
             try
