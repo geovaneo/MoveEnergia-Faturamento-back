@@ -90,7 +90,7 @@ namespace MoveEnergia.Billing.Api.Controllers
             return StatusCode(retornoDto.StatusCode, retornoDto);
         }
 
-        [HttpPost]
+        [HttpGet]
         [Route("Carga/Address")]
         [ProducesResponseType(typeof(ReturnResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

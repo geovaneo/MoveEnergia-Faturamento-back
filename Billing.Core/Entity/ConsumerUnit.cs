@@ -1,4 +1,6 @@
-﻿namespace MoveEnergia.Billing.Core.Entity
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace MoveEnergia.Billing.Core.Entity
 {
     public class ConsumerUnit
     {
@@ -10,15 +12,21 @@
         public DateTime? ExpectativaOperacao { get; set; }
         public DateTime? DataMigracao { get; set; }
         public string NomeUsina { get; set; }
+        [Column(TypeName = "DECIMAL(18,3)")]
         public decimal? FatorCapacidade { get; set; }
         public string Fonte { get; set; }
        
         public byte? ConnectionId { get; set; }
         public string Enquadramento { get; set; }
+        [Column(TypeName = "DECIMAL(18,3)")]
         public decimal? PotenciakWCA { get; set; }
+        [Column(TypeName = "DECIMAL(18,3)")]
         public decimal? DemandaContradada { get; set; }
+        [Column(TypeName = "DECIMAL(18,3)")]
         public decimal? DemandaContradadaForaPonta { get; set; }
+        [Column(TypeName = "DECIMAL(18,3)")]
         public decimal? DemandaContradadaPonta { get; set; }
+        [Column(TypeName = "DECIMAL(18,3)")]
         public decimal? ValorGestao { get; set; }
         public byte UnidadeStatusId { get; set; }
         public byte StateId { get; set; }

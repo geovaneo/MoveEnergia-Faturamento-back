@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography.X509Certificates;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Security.Cryptography.X509Certificates;
 
 namespace MoveEnergia.Billing.Core.Entity
 {
@@ -8,6 +9,7 @@ namespace MoveEnergia.Billing.Core.Entity
         public string? DealId { get; set; }
         public string? Name { get; set; }
         public string? Status { get; set; }
+        [Column(TypeName = "DECIMAL(18,3)")]
         public decimal Value { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }

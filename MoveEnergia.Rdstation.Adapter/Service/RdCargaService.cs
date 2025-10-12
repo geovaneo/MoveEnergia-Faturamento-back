@@ -81,12 +81,9 @@ namespace MoveEnergia.Rdstation.Adapter.Service
 
             while (true)
             {
-
+                Log.Debug(">>>>>>>>>>>>>>>>>>>>>> INICIANDO NOVO LOOP");
                 foreach(var deal in returnHttp.deals)
                 {
-
-                    Log.Debug(deal.name);
-
 
                     string? UC = "";
                     string? rua = "";
@@ -119,7 +116,7 @@ namespace MoveEnergia.Rdstation.Adapter.Service
 
                         if (dealDomain != null)
                         {
-
+                            Log.Debug("Atualizando UC:"+UC);
                             dealDomain.EndRua = String.IsNullOrEmpty(rua) ? null : rua;
                             dealDomain.EndNumero = String.IsNullOrEmpty(numero) ? null : numero;
                             dealDomain.EndComplemento = String.IsNullOrEmpty(complemento) ? null : complemento;
@@ -135,15 +132,14 @@ namespace MoveEnergia.Rdstation.Adapter.Service
                     }
                 }
 
+                Log.Debug("HAS MORE:" + returnHttp.has_more);
                 if (returnHttp.has_more)
                 {
-                    roteApi = $"{_rdStationConfiguration.UrlBase}/deals?token={_rdStationConfiguration.Token}&next_page={next_page}&limit={limit}&deal_pipeline_id=6568d8ab81277a0020e5a736";
+                    Log.Debug($"{_rdStationConfiguration.UrlBase}/deals?token={_rdStationConfiguration.Token}&next_page={returnHttp.next_page}&limit={limit}&deal_pipeline_id=6568d8ab81277a0020e5a736");
+                    roteApi = $"{_rdStationConfiguration.UrlBase}/deals?token={_rdStationConfiguration.Token}&next_page={returnHttp.next_page}&limit={limit}&deal_pipeline_id=6568d8ab81277a0020e5a736";
                     returnHttp = await _httpService.GetAsync<RdStationUnidadeConsumidoraResponseDto>(roteApi);
                 } else break;
             }
-
-            //Log.Debug(returnHttp.ToString());
-
 
             var returnDto = new RdReturnResponseDto()
             {

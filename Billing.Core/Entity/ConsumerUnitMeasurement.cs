@@ -1,11 +1,16 @@
-﻿namespace MoveEnergia.Billing.Core.Entity
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace MoveEnergia.Billing.Core.Entity
 {
     public class ConsumerUnitMeasurement
     {
         public int Id { get; set; }
         public DateTime Date { get; set; }
+        [Column(TypeName = "DECIMAL(18,3)")]
         public decimal? Value { get; set; }
-        public decimal? Ponta { get; set; }        
+        [Column(TypeName = "DECIMAL(18,3)")]
+        public decimal? Ponta { get; set; }
+        [Column(TypeName = "DECIMAL(18,3)")]
         public decimal? ForaPonta { get; set; }
         public int ConsumerUnitId { get; set; }
         public DateTime CreationTime { get; set; }

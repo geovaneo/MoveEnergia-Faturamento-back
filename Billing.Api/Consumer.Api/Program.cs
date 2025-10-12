@@ -1,6 +1,7 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using MoveEnergia.Billing.Data.Context;
@@ -23,6 +24,7 @@ namespace MoveEnergia.Billing.Api
             CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 
             var builder = WebApplication.CreateBuilder(args);
+            builder.Services.AddLogging();
 
             builder.Services.AddControllers()
                 .AddNewtonsoftJson(options =>
@@ -80,15 +82,34 @@ namespace MoveEnergia.Billing.Api
             builder.Services.AddGeneralServiceConfiguration(builder.Configuration);
             builder.Services.AddAdapterSettings(builder.Configuration);
 
-            builder.Logging.ClearProviders();
-            builder.Logging.AddConsole();
+            builder.Host.UseSerilog();
+
+            var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            var configBuilder = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{env}.json", optional: true, reloadOnChange: true)
+                .AddEnvironmentVariables();
+            var builderConfiguration = configBuilder.Build();
+
+            Log.Debug("LOADING DB CONTEXT COTESA");
+
+            var connectionString = builderConfiguration.GetConnectionString("cotesa");
+
+            builder.Services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlServer(connectionString)
+                       .EnableSensitiveDataLogging()
+                       .LogTo(Console.WriteLine, LogLevel.Debug)
+                       .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning))
+                       );
+            Log.Debug("LOADING DB CONTEXT COTESA - DONE");
 
             var app = builder.Build();
 
-            string env = app.Environment.IsDevelopment() ? ".Development" : ".Development";
+            string envLogger = String.IsNullOrEmpty(env) ? "" : "."+env;
             Log.Logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(new ConfigurationBuilder()
-                    .AddJsonFile($"appsettings{env}.json")
+                    .AddJsonFile($"appsettings{envLogger}.json")
                     .Build())
                 .CreateLogger();
 
@@ -108,6 +129,7 @@ namespace MoveEnergia.Billing.Api
             });
 
             app.UseCors("CorsPolicy");
+            app.UseSerilogRequestLogging();
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
@@ -128,13 +150,31 @@ namespace MoveEnergia.Billing.Api
 
             app.MapControllers();
 
-            using (var scope = app.Services.CreateScope())
-            {
-                var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                db.Database.Migrate();
-            }
+            ApplyMigrations(app);
 
             app.Run();
         }
+
+        private static void ApplyMigrations(WebApplication app)
+        {
+            using (var scope = app.Services.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+                // Check and apply pending migrations
+                var pendingMigrations = dbContext.Database.GetPendingMigrations();
+                if (pendingMigrations.Any())
+                {
+                    Console.WriteLine("Applying pending migrations...");
+                    dbContext.Database.Migrate();
+                    Console.WriteLine("Migrations applied successfully.");
+                }
+                else
+                {
+                    Console.WriteLine("No pending migrations found.");
+                }
+            }
+        }
+
     }
 }

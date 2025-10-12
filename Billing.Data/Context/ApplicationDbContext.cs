@@ -1,12 +1,16 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using MoveEnergia.Billing.Core.Entity;
 
 namespace MoveEnergia.Billing.Data.Context
 {
     public class ApplicationDbContext : DbContext
     {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options): base(options)
+        private readonly ILoggerFactory _loggerFactory;
+
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, ILoggerFactory loggerFactory) : base(options)
         {
+            _loggerFactory = loggerFactory;
         }
 
         public DbSet<Tenants> Tenants { get; set; }
@@ -19,6 +23,11 @@ namespace MoveEnergia.Billing.Data.Context
         public DbSet<Customer> Customer { get; set; }
         public DbSet<Address> Address { get; set; }
         public DbSet<Deals> deals { get; set; }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseLoggerFactory(_loggerFactory);
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

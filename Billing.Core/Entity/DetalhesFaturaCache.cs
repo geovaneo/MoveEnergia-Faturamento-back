@@ -1,4 +1,6 @@
-﻿namespace MoveEnergia.Billing.Core.Entity
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace MoveEnergia.Billing.Core.Entity
 {
     public class DetalhesFaturaCache
     {
@@ -11,6 +13,7 @@
         public string DocumentoProprietario { get; set; }
         public DateTime? DataEmissao { get; set; }
         public DateTime? DataVencimento { get; set; }
+        [Column(TypeName = "DECIMAL(18,3)")]
         public decimal? Total { get; set; }
         public bool Emitida { get; set; }
         public bool TemAumento { get; set; }
@@ -24,6 +27,7 @@
         public bool FaturaFraca { get; set; }
         public bool TemInjecaoEnergiaPropria { get; set; }
         public int IdConta { get; set; }
+        [Column(TypeName = "DECIMAL(18,3)")]
         public decimal? Rateio { get; set; }
         public string AnotacaoFatura { get; set; }
         public string UrlArquivo { get; set; }
