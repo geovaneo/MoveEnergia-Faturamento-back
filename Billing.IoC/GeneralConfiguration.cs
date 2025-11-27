@@ -10,6 +10,7 @@ using MoveEnergia.Billing.Core.Interface.Service;
 using MoveEnergia.Billing.Core.Validation;
 using MoveEnergia.Billing.Data.Context;
 using MoveEnergia.Billing.Data.Repository;
+using MoveEnergia.Billing.Extractor.Service;
 using MoveEnergia.Billing.Service;
 using MoveEnergia.Rdstation.Adapter.Configuration;
 using MoveEnergia.Rdstation.Adapter.Interface.Service;
@@ -40,6 +41,7 @@ namespace MoveEnergia.Billing.IoC
         public static void AddGeneralServiceConfiguration(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddScoped<IDistributorService, DistributorService>();
+            services.AddScoped<IPdfExtractorService, PdfExtractorService>();
         }
 
         public static void AddRdStationIntegrationServiceConfiguration(this IServiceCollection services, IConfiguration configuration)

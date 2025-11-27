@@ -70,18 +70,19 @@ namespace MoveEnergia.Rdstation.Adapter.Service
         public async Task<RdReturnResponseDto> CargaEnderecosAsync(int page = 0, int limit = 200, string next_page = "")
         {
 
-            var roteApi = $"{_rdStationConfiguration.UrlBase}/deals?token={_rdStationConfiguration.Token}&page={page}&limit={limit}&deal_pipeline_id=6568d8ab81277a0020e5a736";
+            /*var roteApi = $"{_rdStationConfiguration.UrlBase}/deals?token={_rdStationConfiguration.Token}&page={page}&limit={limit}&deal_pipeline_id=6568d8ab81277a0020e5a736";
 
             if (!string.IsNullOrEmpty(next_page))
             {
                 roteApi = $"{_rdStationConfiguration.UrlBase}/deals?token={_rdStationConfiguration.Token}&next_page={next_page}&limit={limit}";
             }
 
-            var returnHttp = await _httpService.GetAsync<RdStationUnidadeConsumidoraResponseDto>(roteApi);
+            var returnHttp = await _httpService.GetAsync<RdStationUnidadeConsumidoraResponseDto>(roteApi);*/
 
             while (true)
             {
-                Log.Debug(">>>>>>>>>>>>>>>>>>>>>> INICIANDO NOVO LOOP");
+                break;
+                /*Log.Debug(">>>>>>>>>>>>>>>>>>>>>> INICIANDO NOVO LOOP");
                 foreach(var deal in returnHttp.deals)
                 {
 
@@ -138,14 +139,14 @@ namespace MoveEnergia.Rdstation.Adapter.Service
                     Log.Debug($"{_rdStationConfiguration.UrlBase}/deals?token={_rdStationConfiguration.Token}&next_page={returnHttp.next_page}&limit={limit}&deal_pipeline_id=6568d8ab81277a0020e5a736");
                     roteApi = $"{_rdStationConfiguration.UrlBase}/deals?token={_rdStationConfiguration.Token}&next_page={returnHttp.next_page}&limit={limit}&deal_pipeline_id=6568d8ab81277a0020e5a736";
                     returnHttp = await _httpService.GetAsync<RdStationUnidadeConsumidoraResponseDto>(roteApi);
-                } else break;
+                } else break;*/
             }
 
             var returnDto = new RdReturnResponseDto()
             {
                 Error = false,
                 StatusCode = 200,
-                Data = returnHttp,
+                //Data = returnHttp,
             };
 
             return returnDto;

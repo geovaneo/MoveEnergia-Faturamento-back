@@ -17,6 +17,16 @@ namespace MoveEnergia.Billing.Api
     {
         public static void Main(string[] args)
         {
+
+            var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            env = "Development".Equals(env) ? "Development" : "Production";
+
+            Log.Logger = new LoggerConfiguration()
+                .ReadFrom.Configuration(new ConfigurationBuilder()
+                    .AddJsonFile($"appsettings.{env}.json")
+                    .Build())
+                .CreateLogger();
+
             var cultureInfo = new CultureInfo("pt-BR");
 
 
@@ -84,7 +94,6 @@ namespace MoveEnergia.Billing.Api
 
             builder.Host.UseSerilog();
 
-            var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
             var configBuilder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
@@ -105,13 +114,6 @@ namespace MoveEnergia.Billing.Api
             Log.Debug("LOADING DB CONTEXT COTESA - DONE");
 
             var app = builder.Build();
-
-            string envLogger = String.IsNullOrEmpty(env) ? "" : "."+env;
-            Log.Logger = new LoggerConfiguration()
-                .ReadFrom.Configuration(new ConfigurationBuilder()
-                    .AddJsonFile($"appsettings{envLogger}.json")
-                    .Build())
-                .CreateLogger();
 
             app.UseExceptionHandler(config =>
             {
