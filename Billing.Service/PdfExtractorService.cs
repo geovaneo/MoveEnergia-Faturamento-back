@@ -54,6 +54,8 @@ namespace MoveEnergia.Billing.Extractor.Service
                     string fileName = fileInfo.FullName;
                     Log.Debug("Arquivo:{0}: Criado em:{1}", fileName, fileInfo.LastWriteTime);
 
+                    //if (fileName.IndexOf("3510590-copel") < 0) continue;
+
                     string md5 = PdfExtractorUtils.GetMD5Checksum(fileName);
 
                     using (PdfDocument document = PdfDocument.Open(fileName))
@@ -67,10 +69,14 @@ namespace MoveEnergia.Billing.Extractor.Service
 
                         if (TextOut.IndexOf("Beneficiário: Celesc Distribuição") >= 0)
                         {
-                            //CELESC
                             extractor = new PdfExtractorCelesc();
-                        } else
+                        } else if (TextOut.IndexOf("Copel Distribuição") >= 0)
                         {
+                            extractor = new PdfExtractorCopel();
+                        }
+                        else
+                        {
+                            extractor = new PdfExtractorRGE();
                             //Documento Ignorado
                         }
                         if (extractor != null)
