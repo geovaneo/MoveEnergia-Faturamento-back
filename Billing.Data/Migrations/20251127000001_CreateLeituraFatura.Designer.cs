@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MoveEnergia.Billing.Data.Context;
 
@@ -11,9 +12,11 @@ using MoveEnergia.Billing.Data.Context;
 namespace MoveEnergia.Billing.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251127000001_CreateLeituraFatura.Designer")]
+    partial class CreateLeituraFatura
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -165,15 +168,15 @@ namespace MoveEnergia.Billing.Data.Migrations
                         .HasColumnName("DeletionTime");
 
                     b.Property<decimal?>("DemandaContradada")
-                        .HasColumnType("DECIMAL(18,3)")
+                        .HasColumnType("decimal(18,2)")
                         .HasColumnName("DemandaContradada");
 
                     b.Property<decimal?>("DemandaContradadaForaPonta")
-                        .HasColumnType("DECIMAL(18,3)")
+                        .HasColumnType("decimal(18,2)")
                         .HasColumnName("DemandaContradadaForaPonta");
 
                     b.Property<decimal?>("DemandaContradadaPonta")
-                        .HasColumnType("DECIMAL(18,3)")
+                        .HasColumnType("decimal(18,2)")
                         .HasColumnName("DemandaContradadaPonta");
 
                     b.Property<int>("DistributorId")
@@ -189,7 +192,7 @@ namespace MoveEnergia.Billing.Data.Migrations
                         .HasColumnName("ExpectativaOperacao");
 
                     b.Property<decimal?>("FatorCapacidade")
-                        .HasColumnType("DECIMAL(18,3)")
+                        .HasColumnType("decimal(18,2)")
                         .HasColumnName("FatorCapacidade");
 
                     b.Property<string>("Fonte")
@@ -217,7 +220,7 @@ namespace MoveEnergia.Billing.Data.Migrations
                         .HasColumnName("NomeUsina");
 
                     b.Property<decimal?>("PotenciakWCA")
-                        .HasColumnType("DECIMAL(18,3)")
+                        .HasColumnType("decimal(18,2)")
                         .HasColumnName("PotenciakWCA");
 
                     b.Property<string>("SenhaDist")
@@ -256,7 +259,7 @@ namespace MoveEnergia.Billing.Data.Migrations
                         .HasColumnName("UserId");
 
                     b.Property<decimal?>("ValorGestao")
-                        .HasColumnType("DECIMAL(18,3)")
+                        .HasColumnType("decimal(18,2)")
                         .HasColumnName("ValorGestao");
 
                     b.HasKey("Id")
@@ -339,7 +342,7 @@ namespace MoveEnergia.Billing.Data.Migrations
                         .HasColumnName("DeletionTime");
 
                     b.Property<decimal?>("ForaPonta")
-                        .HasColumnType("DECIMAL(18,3)")
+                        .HasColumnType("decimal(18,2)")
                         .HasColumnName("ForaPonta");
 
                     b.Property<bool>("IsDeleted")
@@ -355,11 +358,11 @@ namespace MoveEnergia.Billing.Data.Migrations
                         .HasColumnName("LastModifierUserId");
 
                     b.Property<decimal?>("Ponta")
-                        .HasColumnType("DECIMAL(18,3)")
+                        .HasColumnType("decimal(18,2)")
                         .HasColumnName("Ponta");
 
                     b.Property<decimal?>("Value")
-                        .HasColumnType("DECIMAL(18,3)")
+                        .HasColumnType("decimal(18,2)")
                         .HasColumnName("Value");
 
                     b.HasKey("Id")
@@ -656,7 +659,7 @@ namespace MoveEnergia.Billing.Data.Migrations
                         .HasColumnName("UpdatedAt");
 
                     b.Property<decimal>("Value")
-                        .HasColumnType("DECIMAL(18,3)")
+                        .HasColumnType("decimal(18,2)")
                         .HasColumnName("Value");
 
                     b.HasKey("Id")
@@ -759,7 +762,7 @@ namespace MoveEnergia.Billing.Data.Migrations
                         .HasColumnName("QuantidadeFaturas");
 
                     b.Property<decimal?>("Rateio")
-                        .HasColumnType("DECIMAL(18,3)")
+                        .HasColumnType("decimal(18,2)")
                         .HasColumnName("Rateio");
 
                     b.Property<bool>("SemUCNoRD")
@@ -799,7 +802,7 @@ namespace MoveEnergia.Billing.Data.Migrations
                         .HasColumnName("TemInjecaoEnergiaPropria");
 
                     b.Property<decimal?>("Total")
-                        .HasColumnType("DECIMAL(18,3)")
+                        .HasColumnType("decimal(18,2)")
                         .HasColumnName("Total");
 
                     b.Property<string>("Uc")
@@ -846,11 +849,11 @@ namespace MoveEnergia.Billing.Data.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<decimal>("COFINSComum")
-                        .HasColumnType("DECIMAL(18,3)")
+                        .HasColumnType("decimal(18,2)")
                         .HasColumnName("COFINSComum");
 
                     b.Property<decimal>("COFINSInjetada")
-                        .HasColumnType("DECIMAL(18,3)")
+                        .HasColumnType("decimal(18,2)")
                         .HasColumnName("COFINSInjetada");
 
                     b.Property<string>("Cnpj")
@@ -865,19 +868,19 @@ namespace MoveEnergia.Billing.Data.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("ICMSComum")
-                        .HasColumnType("DECIMAL(18,3)")
+                        .HasColumnType("decimal(18,2)")
                         .HasColumnName("ICMSComum");
 
                     b.Property<decimal>("ICMSInjetada")
-                        .HasColumnType("DECIMAL(18,3)")
+                        .HasColumnType("decimal(18,2)")
                         .HasColumnName("ICMSInjetada");
 
                     b.Property<decimal>("ICMSTE")
-                        .HasColumnType("DECIMAL(18,3)")
+                        .HasColumnType("decimal(18,2)")
                         .HasColumnName("ICMSTE");
 
                     b.Property<decimal>("ICMSTUSDc")
-                        .HasColumnType("DECIMAL(18,3)")
+                        .HasColumnType("decimal(18,2)")
                         .HasColumnName("ICMSTUSDc");
 
                     b.Property<int?>("IdCooperativa")
@@ -897,11 +900,11 @@ namespace MoveEnergia.Billing.Data.Migrations
                         .HasColumnName("NomeDeApresentacao");
 
                     b.Property<decimal>("PISComum")
-                        .HasColumnType("DECIMAL(18,3)")
+                        .HasColumnType("decimal(18,2)")
                         .HasColumnName("PISComum");
 
                     b.Property<decimal>("PISInjetada")
-                        .HasColumnType("DECIMAL(18,3)")
+                        .HasColumnType("decimal(18,2)")
                         .HasColumnName("PISInjetada");
 
                     b.Property<string>("Sigla")
@@ -1029,61 +1032,6 @@ namespace MoveEnergia.Billing.Data.Migrations
                         .HasName("Id");
 
                     b.ToTable("FederativeUnits", "dbo");
-                });
-
-            modelBuilder.Entity("MoveEnergia.Billing.Core.Entity.LeituraFaturaPdf", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("Id");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("MesReferencia")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("mesref");
-
-                    b.Property<string>("UC")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("UC");
-
-                    b.Property<decimal?>("Valor")
-                        .HasColumnType("decimal(18,2)")
-                        .HasColumnName("Valor");
-
-                    b.Property<DateTime?>("Vencimento")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("vencimento");
-
-                    b.HasKey("Id")
-                        .HasName("Id");
-
-                    b.ToTable("LeituraFaturaPdf", "dbo");
-                });
-
-            modelBuilder.Entity("MoveEnergia.Billing.Core.Entity.LeituraFaturaPdfProcesso", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("Inicio")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("inicio");
-
-                    b.Property<DateTime?>("Termino")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("termino");
-
-                    b.HasKey("Id")
-                        .HasName("Id");
-
-                    b.ToTable("LeituraFaturaPdfProcesso", "dbo");
                 });
 
             modelBuilder.Entity("MoveEnergia.Billing.Core.Entity.Position", b =>

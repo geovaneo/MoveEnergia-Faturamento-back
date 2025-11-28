@@ -1,5 +1,7 @@
 ﻿using Serilog;
+using System.Globalization;
 using System.Reflection.Metadata;
+using System.Security.Cryptography;
 using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig.Core;
 using UglyToad.PdfPig.Geometry;
@@ -83,6 +85,64 @@ namespace MoveEnergia.Billing.Extractor.Service
                 }
             }
             return words;
+        }
+
+
+        public static string GetMD5Checksum(string filePath)
+        {
+            if (!File.Exists(filePath))
+            {
+                throw new FileNotFoundException("File not found.", filePath);
+            }
+
+            using (var md5 = MD5.Create())
+            {
+                using (var stream = File.OpenRead(filePath))
+                {
+                    byte[] hash = md5.ComputeHash(stream);
+                    return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+                }
+            }
+        }
+
+        public static DateTime ParseStringToDate(string texto)
+        {
+            DateTime dt;
+            bool isSuccess = DateTime.TryParseExact(texto, "dd/MM/yyyy", new CultureInfo("pt-BR"), DateTimeStyles.None, out dt);
+            return dt;
+        }
+
+        public static Decimal ParseStringToDecimal(string texto)
+        {
+            string valor = texto.Replace(".", "");
+            valor = valor.Replace(",", ".");
+            decimal decimalFromDot;
+            Decimal.TryParse(valor, NumberStyles.Any, CultureInfo.GetCultureInfo("en-US"), out decimalFromDot);
+            return decimalFromDot;
+        }
+
+        public static int ParseStringToInt(string texto)
+        {
+            string valor = texto.Replace(".", "");
+            return Convert.ToInt32(valor);
+        }
+
+        public static int IndexOfAny(string source, params string[] valuesToFind)
+        {
+            int minIndex = -1;
+
+            foreach (string c in valuesToFind)
+            {
+                int currentIndex = source.ToLower().IndexOf(c.ToLower());
+                if (currentIndex != -1)
+                {
+                    if (minIndex == -1 || currentIndex < minIndex)
+                    {
+                        minIndex = currentIndex;
+                    }
+                }
+            }
+            return minIndex;
         }
 
     }
