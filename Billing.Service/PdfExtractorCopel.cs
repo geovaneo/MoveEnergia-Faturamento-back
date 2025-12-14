@@ -21,6 +21,7 @@ namespace MoveEnergia.Billing.Extractor.Service
         }
         public async Task<FaturaPdfData> ExtractInfo(PdfDocument document)
         {
+            Log.Debug("extract copel");
             FaturaPdfData pdfData = new FaturaPdfData();
             pdfData.NomeDistribuidora = "COPEL";
 

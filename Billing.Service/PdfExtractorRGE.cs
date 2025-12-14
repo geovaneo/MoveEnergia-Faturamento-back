@@ -20,7 +20,7 @@ namespace MoveEnergia.Billing.Extractor.Service
         }
         public async Task<FaturaPdfData> ExtractInfo(PdfDocument document)
         {
-            Log.Debug("extract1");
+            Log.Debug("extract rge");
             FaturaPdfData pdfData = new FaturaPdfData();
             pdfData.NomeDistribuidora = "RGE";
 
@@ -31,6 +31,8 @@ namespace MoveEnergia.Billing.Extractor.Service
 
         private bool FindUC(string pageText, FaturaPdfData pdfData)
         {
+            Log.Debug("Procurando UC");
+            pageText = Regex.Replace(pageText.Trim(), @"\s+", " ");
             Match match = Regex.Match(pageText, @"\d{4,11} NOTA FISCAL");
             if (match.Success)
             {
@@ -81,51 +83,28 @@ namespace MoveEnergia.Billing.Extractor.Service
 
         private void GetDadosLeitura(string pageText, FaturaPdfData pdfData)
         {
-
+            pageText = Regex.Replace(pageText.Trim(), @"\s+", " ");
+            Log.Debug(">> GetDadosLeitura");
             Match match = Regex.Match(pageText, @"(\d{2}\/\d{2}\/\d{4}) (\d{2}\/\d{2}\/\d{4}) \d{1,2} Proxima leitura (\d{2}\/\d{2}\/\d{4})");
             if (match.Success)
             {
-                Log.Debug($"First match: {match.Value} at index {match.Index}");
+                Log.Debug($"Datas Leitura: {match.Value} at index {match.Index}");
                 string[] infos = match.Value.Split(" ");
 
                 pdfData.LeituraAnterior = PdfExtractorUtils.ParseStringToDate(infos[0]);
                 pdfData.LeituraAtual = PdfExtractorUtils.ParseStringToDate(infos[1]);
             }
-
-            match = Regex.Match(pageText, @"Energia \d{1,3}.\d{1,3} \d{1,3}.\d{1,3} \d{1,3},\d{1,5} \d{1,3},\d{1,3} \d{1,3}.\d{1,3}");
-            if (match.Success)
-            {
-                Log.Debug($"First match: {match.Value} at index {match.Index}");
-                string[] infos = match.Value.Split(" ");
-
-                pdfData.EnergiaConsumida = PdfExtractorUtils.ParseStringToInt(infos[5]);
-                //pdfData.LeituraAtual = PdfExtractorUtils.ParseStringToDate(infos[1]);
-            }
-
+            else Log.Debug(">>>> Não encontrou datas de leitura");
 
         }
 
-        private void GetLinhasFatura(Page page, FaturaPdfData pdfData, double anchorPagina)
+        private void GetLinhasFatura(FaturaPdfData pdfData, string pageText)
         {
             pdfData.Linhas = new List<FaturaPdfLinha>();
-
-            var areaWithoutBorders = new PdfRectangle(0, anchorPagina - 400, page.Width * 0.75, anchorPagina);
-            //Log.Debug($"x1: {0} y1: {600} x2:{page.Width / 2} y2:{page.Height} height:{page.Height}");
-
-            var words = page.GetWords().Where(w => areaWithoutBorders.Contains(w.BoundingBox)).ToList();
-
-            List<Word> sortedWords = words
-                .OrderBy(w => page.Height - w.BoundingBox.Bottom) // Sort by the bottom edge of the bounding box
-                .ThenBy(w => w.BoundingBox.Left)    // Then by the left edge of the bounding box
-                .ToList();
-
-            var pageText = string.Join(" ", sortedWords);
-            Log.Debug("LINHAS");
-            Log.Debug(pageText);
-
+            
             int energiaCompensada = 0;
-            string texto = pageText.Trim();
-            MatchCollection matches = Regex.Matches(pageText, @"KWH (\d{1,3}[.])*\d{1,3},\d{1,6} [-]*\d{1,2},\d{1,6} [-]*(\d{1,3}[.])*\d{1,3},\d{1,2} \d{1,3},\d{1,2} \d{1,3},\d{1,2} \d{1,3},\d{1,2} \d{1,3},\d{1,2} \d{1,3},\d{1,6}");
+            int energiaConsumida = 0;
+            MatchCollection matches = Regex.Matches(pageText, @"kWh (\d{1,3}[.])*\d{1,3},\d{1,6} \d{1,3},\d{1,8} \d{1,3},\d{1,8} (\d{1,3}[.])*\d{1,3},\d{1,2}[-]* ([-]*\d{1,3},\d{1,2})*([ ]*\d{1,3}[,\.]\d{1,2})*( \d{1,3},\d{1,2})*( [-]*\d{1,3},\d{1,2})*( [-]*\d{1,3},\d{1,2})*");
             foreach (Match match in matches)
             {
 
@@ -135,33 +114,59 @@ namespace MoveEnergia.Billing.Extractor.Service
                 //KWH 1.828,000 0,408884 747,44 31,89 747,44 17,00 127,06 0,321930
                 //KWH 1.828,000 0,408884 747,44 31,89 747,44 17,00 127,06 0,321930 (0D) Consumo TE >> precisa pegar essa ultima descricao tb
 
-                FaturaPdfLinha linha = new FaturaPdfLinha();
-                linha.Unidade = infos[0];
-                linha.Qtd = PdfExtractorUtils.ParseStringToDecimal(infos[1]);
-                linha.PrecoUnit = PdfExtractorUtils.ParseStringToDecimal(infos[2]);
-                linha.Valor = PdfExtractorUtils.ParseStringToDecimal(infos[3]);
-                linha.CofinsPIS = PdfExtractorUtils.ParseStringToDecimal(infos[4]);
-                linha.ICMSBaseCalc = PdfExtractorUtils.ParseStringToDecimal(infos[5]);
-                linha.ICMSAliq = PdfExtractorUtils.ParseStringToDecimal(infos[6]);
-                linha.ICMS = PdfExtractorUtils.ParseStringToDecimal(infos[7]);
-                linha.TarifaUnit = PdfExtractorUtils.ParseStringToDecimal(infos[8]);
-
-                texto = texto.Substring(texto.IndexOf(match.Value) + match.Value.Length);
+                string texto = pageText.Substring(0, pageText.IndexOf(match.Value));
                 Log.Debug(texto);
-                int nextOrEnd = PdfExtractorUtils.IndexOfAny(texto, "KWH", "SUBTOTAL");
-                if (nextOrEnd >= 0)
-                {
-                    Log.Debug("Nome:" + texto.Substring(0, nextOrEnd));
-                    linha.Descricao = texto.Substring(0, nextOrEnd).Trim();
+                string name = texto.Substring(texto.LastIndexOf("\n") + 1);
+                Log.Debug("*********************************" + name);
 
-                    if (linha.Descricao.IndexOf("Energia Injet. TE") >= 0)
+                FaturaPdfLinha linha = new FaturaPdfLinha();
+                linha.Descricao = name;
+
+                linha.Unidade = infos[0];
+                if (infos.Length == 10)
+                {
+                    //Linha Completa
+                    //NOME - unid medida - qtd - tarifa aneel - tarifa com trib - valor - base icms - aliq icms - icms - pis - cofins
+                    //Consumo - TE OUT/25 kWh 870,0000 0,30445000 0,39382759 342,63 342,63 17,00 58,25 3,50 16,01
+                    linha.Qtd = PdfExtractorUtils.ParseStringToDecimal(infos[1]);
+                    
+                    //linha.PrecoUnit = PdfExtractorUtils.ParseStringToDecimal(infos[2]);
+                    linha.Valor = PdfExtractorUtils.ParseStringToDecimal(infos[4]);
+                    //linha.TarifaUnit = PdfExtractorUtils.ParseStringToDecimal(infos[8]);
+
+                    linha.ICMSBaseCalc = PdfExtractorUtils.ParseStringToDecimal(infos[5]);
+                    linha.ICMSAliq = PdfExtractorUtils.ParseStringToDecimal(infos[6]);
+                    linha.ICMS = PdfExtractorUtils.ParseStringToDecimal(infos[7]);
+                    linha.PIS = PdfExtractorUtils.ParseStringToDecimal(infos[8]);
+                    linha.Cofins = PdfExtractorUtils.ParseStringToDecimal(infos[9]);
+                } else if (linha.Descricao.IndexOf("Energ Atv Inj") >= 0)
                     {
-                        energiaCompensada += Convert.ToInt32(linha.Qtd);
-                    }
+                    linha.Qtd = PdfExtractorUtils.ParseStringToDecimal(infos[1]);
+
+                    //linha.PrecoUnit = PdfExtractorUtils.ParseStringToDecimal(infos[2]);
+                    linha.Valor = PdfExtractorUtils.ParseStringToDecimal(infos[4]);
+                    //linha.TarifaUnit = PdfExtractorUtils.ParseStringToDecimal(infos[8]);
                 }
-                else linha.Descricao = "NAO IDENT";
+                else if (linha.Descricao.IndexOf("Adicional de Bandeira") >= 0)
+                {
+                    linha.Valor = PdfExtractorUtils.ParseStringToDecimal(infos[1]);
+                    linha.ICMSBaseCalc = PdfExtractorUtils.ParseStringToDecimal(infos[2]);
+                    linha.ICMSAliq = PdfExtractorUtils.ParseStringToDecimal(infos[3]);
+                    linha.ICMS = PdfExtractorUtils.ParseStringToDecimal(infos[4]);
+                    linha.PIS = PdfExtractorUtils.ParseStringToDecimal(infos[5]);
+                    linha.Cofins = PdfExtractorUtils.ParseStringToDecimal(infos[6]);
+                }
+
+                if (linha.Descricao.IndexOf("Consumo - TE") >= 0)
+                {
+                    energiaConsumida += Convert.ToInt32(linha.Qtd);
+                } else if (linha.Descricao.IndexOf("Energ Atv Inj. oUC mPT - TE") >= 0)
+                {
+                    energiaCompensada += Convert.ToInt32(linha.Qtd);
+                }
 
                 pdfData.EnergiaCompensada = energiaCompensada;
+                pdfData.EnergiaConsumida = energiaConsumida;
 
                 pdfData.Linhas.Add(linha);
             }
@@ -175,7 +180,7 @@ namespace MoveEnergia.Billing.Extractor.Service
             Page page = document.GetPage(1);
 
             string TextOut1 = ContentOrderTextExtractor.GetText(page, true);
-            TextOut1 = Regex.Replace(TextOut1.Trim(), @"\s+", " ");
+            TextOut1 = Regex.Replace(TextOut1.Trim(), @"[ ]+", " ");
             TextOut1 = TextOut1.Normalize(NormalizationForm.FormD);
             TextOut1 = Regex.Replace(TextOut1, @"\p{Mn}+", "", RegexOptions.None);
 
@@ -198,6 +203,8 @@ namespace MoveEnergia.Billing.Extractor.Service
             {
                 pdfData.CodBarras = match.Value.Replace(".", "").Replace(" ", "");
             }
+
+            GetLinhasFatura(pdfData, TextOut1);
 
                 /*int index = 0;
             foreach (Word word in page.GetWords())

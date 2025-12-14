@@ -20,7 +20,7 @@ namespace MoveEnergia.Billing.Extractor.Service
         }
         public async Task<FaturaPdfData> ExtractInfo(PdfDocument document)
         {
-            Log.Debug("extract1");
+            Log.Debug("extract celesc");
             FaturaPdfData pdfData = new FaturaPdfData();
             pdfData.NomeDistribuidora = "CELESC-DIS";
 
@@ -125,7 +125,7 @@ namespace MoveEnergia.Billing.Extractor.Service
         private void GetLinhasFatura(Page page, FaturaPdfData pdfData, double anchorPagina)
         {
             pdfData.Linhas = new List<FaturaPdfLinha>();
-
+            Log.Debug("************ LINHAS");
             var areaWithoutBorders = new PdfRectangle(0, anchorPagina - 400, page.Width * 0.75, anchorPagina);
             //Log.Debug($"x1: {0} y1: {600} x2:{page.Width / 2} y2:{page.Height} height:{page.Height}");
 
@@ -142,7 +142,7 @@ namespace MoveEnergia.Billing.Extractor.Service
 
             int energiaCompensada = 0;
             string texto = pageText.Trim();
-            MatchCollection matches = Regex.Matches(pageText, @"KWH (\d{1,3}[.])*\d{1,3},\d{1,6} [-]*\d{1,2},\d{1,6} [-]*(\d{1,3}[.])*\d{1,3},\d{1,2} \d{1,3},\d{1,2} \d{1,3},\d{1,2} \d{1,3},\d{1,2} \d{1,3},\d{1,2} \d{1,3},\d{1,6}");
+            MatchCollection matches = Regex.Matches(pageText, @"KWH (\d{1,3}[.])*\d{1,3},\d{1,6} [-]*\d{1,2},\d{1,6} [-]*(\d{1,3}[.])*\d{1,3},\d{1,2} [-]*\d{1,3},\d{1,2} [-]*\d{1,3},\d{1,2} \d{1,3},\d{1,2} [-]*\d{1,3},\d{1,2} \d{1,3},\d{1,6}");
             foreach (Match match in matches)
             {
 
@@ -213,32 +213,58 @@ namespace MoveEnergia.Billing.Extractor.Service
             }
 
                 int index = 0;
+            bool secoesSuperiores = false;
+            bool secaoLinhas = false;
+            Log.Debug(">>>>>>>>>>>>>>> INICIO LINHAS e CABECALHO");
             foreach (Word word in page.GetWords())
             {
-                //Log.Debug($"Word: '{word.Text}' '{word.Text.ToLower()}' [{"comunicado".Equals(word.Text.ToLower())}], BoundingBox: {word.BoundingBox}");
+                Log.Debug($"Word: '{word.Text}' '{word.Text.ToLower()}' [{"comunicado".Equals(word.Text.ToLower())}], BoundingBox: {word.BoundingBox}");
 
                 if ("comunicado".Equals(word.Text.ToLower()))
                 {
                     //Log.Debug($"Word: '{word.Text}', BoundingBox: {word.BoundingBox}");
                     Word nextWord = page.GetWords().ElementAt(index + 1);
-                    if ("importante".Equals(nextWord.Text.ToLower()))
+                    if (!secoesSuperiores && "importante".Equals(nextWord.Text.ToLower()))
                     {
                         //encontrou seção divisora importante
                         //Log.Debug("Fatiar seção dados do cliente");
                         GetDadosCliente(page, pdfData);
                         GetDadosLeitura(page, pdfData, word.BoundingBox.Top);
+                        secoesSuperiores = true;
                     }
 
-                } else if ("consumo".Equals(word.Text.ToLower()))
+                } else if (!secoesSuperiores && "reaviso".Equals(word.Text.ToLower()))
+                {
+                    Word nextWord = page.GetWords().ElementAt(index + 1);
+                    if ("de".Equals(nextWord.Text.ToLower()))
+                    {
+                        Word nextWord2 = page.GetWords().ElementAt(index + 2);
+                        if ("débito".Equals(nextWord2.Text.ToLower()))
+                        {
+                            //encontrou seção divisora importante
+                            GetDadosCliente(page, pdfData);
+                            GetDadosLeitura(page, pdfData, word.BoundingBox.Top);
+                            secoesSuperiores = true;
+                        }
+                    }
+
+                }
+                else if (!secaoLinhas && "consumo".Equals(word.Text.ToLower()))
                 {
                     Word nextWord = page.GetWords().ElementAt(index + 1);
                     if ("faturado".Equals(nextWord.Text.ToLower()))
                     {
                         GetLinhasFatura(page, pdfData, word.BoundingBox.Top);
+                        secaoLinhas = true;
+                    } else if ("te".Equals(nextWord.Text.ToLower()))
+                    {
+                        GetLinhasFatura(page, pdfData, word.BoundingBox.Top + 30);
+                        secaoLinhas = true;
                     }
 
                 }
                 index++;
+                if (secoesSuperiores && secaoLinhas) break;
             }
 
             Page page2 = document.GetPage(2);

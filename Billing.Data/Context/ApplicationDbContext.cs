@@ -23,6 +23,7 @@ namespace MoveEnergia.Billing.Data.Context
         public DbSet<Customer> Customer { get; set; }
         public DbSet<Address> Address { get; set; }
         public DbSet<Deals> deals { get; set; }
+        public DbSet<LeituraFaturaPdf> LeituraFaturaPdfs { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

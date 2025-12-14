@@ -13,6 +13,8 @@
         public Decimal? PrecoUnit { get; set; }
         public Decimal? Valor { get; set; }
         public Decimal? CofinsPIS { get; set; }
+        public Decimal? Cofins { get; set; }
+        public Decimal? PIS { get; set; }
         public Decimal? ICMSBaseCalc { get; set; }
         public Decimal? ICMSAliq { get; set; }
         public Decimal? ICMS { get; set; }

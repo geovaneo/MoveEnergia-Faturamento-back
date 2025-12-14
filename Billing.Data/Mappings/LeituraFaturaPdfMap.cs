@@ -19,11 +19,11 @@ namespace MoveEnergia.Billing.Data.Mappings
 
             builder.Property(x => x.UC)
                    .HasColumnName("UC")
-                   .IsRequired(true);
+                   .IsRequired(false);
 
             builder.Property(x => x.MesReferencia)
                    .HasColumnName("mesref")
-                   .IsRequired(true);
+                   .IsRequired(false);
 
             builder.Property(x => x.Vencimento)
                    .HasColumnName("vencimento")
