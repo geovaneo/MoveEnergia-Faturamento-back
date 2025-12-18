@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MoveEnergia.Billing.Data.Context;
 
@@ -11,9 +12,11 @@ using MoveEnergia.Billing.Data.Context;
 namespace MoveEnergia.Billing.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251217031626_AddFaturaPdfLogFields")]
+    partial class AddFaturaPdfLogFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1116,9 +1119,8 @@ namespace MoveEnergia.Billing.Data.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("emissao");
 
-                    b.Property<decimal?>("EnergiaCompensada")
-                        .HasPrecision(12, 5)
-                        .HasColumnType("decimal(12,5)")
+                    b.Property<int?>("EnergiaCompensada")
+                        .HasColumnType("int")
                         .HasColumnName("energiacompensada");
 
                     b.Property<int?>("EnergiaConsumida")
@@ -1184,10 +1186,6 @@ namespace MoveEnergia.Billing.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("DataHora")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("datahora");
-
                     b.Property<string>("FileMD5")
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("filemd5");
@@ -1200,21 +1198,12 @@ namespace MoveEnergia.Billing.Data.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("folder");
 
-                    b.Property<string>("Mensagem")
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("mensagem");
-
                     b.Property<string>("NomeDistribuidora")
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("nomedistr");
 
-                    b.Property<int>("Processo")
-                        .HasColumnType("int");
-
                     b.HasKey("Id")
                         .HasName("Id");
-
-                    b.HasIndex("Processo");
 
                     b.ToTable("LeituraFaturaPdfLog", "dbo");
                 });
@@ -1715,17 +1704,6 @@ namespace MoveEnergia.Billing.Data.Migrations
                     b.Navigation("FaturaPDF");
                 });
 
-            modelBuilder.Entity("MoveEnergia.Billing.Core.Entity.LeituraFaturaPdfLog", b =>
-                {
-                    b.HasOne("MoveEnergia.Billing.Core.Entity.LeituraFaturaPdfProcesso", "ProcessoEntity")
-                        .WithMany("Logs")
-                        .HasForeignKey("Processo")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ProcessoEntity");
-                });
-
             modelBuilder.Entity("MoveEnergia.Billing.Core.Entity.Telephone", b =>
                 {
                     b.HasOne("MoveEnergia.Billing.Core.Entity.Contact", "Contact")
@@ -1778,11 +1756,6 @@ namespace MoveEnergia.Billing.Data.Migrations
             modelBuilder.Entity("MoveEnergia.Billing.Core.Entity.LeituraFaturaPdf", b =>
                 {
                     b.Navigation("Linhas");
-                });
-
-            modelBuilder.Entity("MoveEnergia.Billing.Core.Entity.LeituraFaturaPdfProcesso", b =>
-                {
-                    b.Navigation("Logs");
                 });
 
             modelBuilder.Entity("MoveEnergia.Billing.Core.Entity.Position", b =>

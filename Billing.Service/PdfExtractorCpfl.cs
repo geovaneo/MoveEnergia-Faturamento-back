@@ -13,15 +13,15 @@ using UglyToad.PdfPig.Geometry;
 
 namespace MoveEnergia.Billing.Extractor.Service
 {
-    public class PdfExtractorRGE : IPdfExtractorByDistr
+    public class PdfExtractorCpfl : IPdfExtractorByDistr
     {
-        public PdfExtractorRGE()
+        public PdfExtractorCpfl()
         {
         }
 
         public string GetDistribuidora()
         {
-            return "RGE";
+            return "CPFL";
         }
         public async Task<FaturaPdfData> ExtractInfo(PdfDocument document)
         {
@@ -52,27 +52,31 @@ namespace MoveEnergia.Billing.Extractor.Service
         private bool GetDadosCliente(string? pageText, FaturaPdfData pdfData)
         {
             Log.Debug("GetDadosCliente");
-            Log.Debug(pageText);
-            
+            if (String.IsNullOrWhiteSpace(pageText))
+            {
+                pdfData.ErrorMessage = "GetDadosCliente - Sem conteúdo texto na página";
+                return false;
+            }
 
-            pageText = Regex.Replace(pageText.Trim(), @"\s+", " ");
-
-            Match match = Regex.Match(pageText, @"\w{3}\/\d{4} \d{2}\/\d{2}\/\d{4} R\$ ((\d{0,3}[.])*\d{1,3},\d{2}|\*{10})");
+            Match match = Regex.Match(pageText, @"\w{3}\/\d{4} \d{2}\/\d{2}\/\d{4} R\$ (\d{0,3}[.])*\d{1,3},\d{2}");
             if (match.Success)
             {
                 Log.Debug($"GetDadosCliente: {match.Value} at index {match.Index}");
                 string[] infos = match.Value.Split(" ");
                 
-                if (infos[3].IndexOf("***") < 0) pdfData.Valor = PdfExtractorUtils.ParseStringToDecimal(infos[3]);
+                pdfData.Valor = PdfExtractorUtils.ParseStringToDecimal(infos[3]);
                 pdfData.MesRef = PdfExtractorUtils.ParseMonthStringToNumber(infos[0]);                
                 pdfData.Vcto = PdfExtractorUtils.ParseStringToDate(infos[1]);
                 pdfData.ErrorMessage = null;
-            } else
+            }
+            else
             {
                 pdfData.ErrorMessage = "Valor, MesRef e Vcto não identificados";
                 return false;
             }
             return true;
+
+
         }
 
         private void GetDadosLeitura(string pageText, FaturaPdfData pdfData)
@@ -96,19 +100,19 @@ namespace MoveEnergia.Billing.Extractor.Service
         {
             pdfData.Linhas = new List<FaturaPdfLinha>();
             
-            decimal energiaCompensada = 0;
+            int energiaCompensada = 0;
             int energiaConsumida = 0;
-            MatchCollection matches = Regex.Matches(pageText, @"kWh (\d{1,3}[.])*\d{1,3},\d{1,6} (\d{1,3},\d{1,8} )*\d{1,3},\d{1,8} (\d{1,3}[.])*\d{1,3},\d{1,2}[-]*( [-]*\d{1,3},\d{1,2})*([ ]*\d{1,3}[,\.]\d{1,2})*( \d{1,3},\d{1,2})*( [-]*\d{1,3},\d{1,2})*( [-]*\d{1,3},\d{1,2})*");
+            MatchCollection matches = Regex.Matches(pageText, @"kWh (\d{1,3}[.])*\d{1,3},\d{1,6} \d{1,3},\d{1,8} \d{1,3},\d{1,8} (\d{1,3}[.])*\d{1,3},\d{1,2}[-]* ([-]*\d{1,3},\d{1,2})*([ ]*\d{1,3}[,\.]\d{1,2})*( \d{1,3},\d{1,2})*( [-]*\d{1,3},\d{1,2})*( [-]*\d{1,3},\d{1,2})*");
             foreach (Match match in matches)
             {
 
-                Log.Debug($"First match: {match.Value} at index {match.Index}");
+                //Log.Debug($"First match: {match.Value} at index {match.Index}");
                 string[] infos = match.Value.Split(" ");
 
                 string texto = pageText.Substring(0, pageText.IndexOf(match.Value));
                 //Log.Debug(texto);
                 string name = texto.Substring(texto.LastIndexOf("\n") + 1);
-                Log.Debug("Nome Linha: *********************************" + name);
+                //Log.Debug("*********************************" + name);
 
                 FaturaPdfLinha linha = new FaturaPdfLinha();
                 linha.Descricao = name;
@@ -131,20 +135,12 @@ namespace MoveEnergia.Billing.Extractor.Service
                     linha.PIS = PdfExtractorUtils.ParseStringToDecimal(infos[8]);
                     linha.Cofins = PdfExtractorUtils.ParseStringToDecimal(infos[9]);
                 } else if (linha.Descricao.IndexOf("Energ Atv Inj") >= 0)
-                {
+                    {
                     linha.Qtd = PdfExtractorUtils.ParseStringToDecimal(infos[1]);
-                    if (infos.Length == 4)
-                    {
-                        linha.PrecoUnit = PdfExtractorUtils.ParseStringToDecimal(infos[2]);
-                        linha.Valor = PdfExtractorUtils.ParseStringToDecimal(infos[3]);
-                    }
-                    else
-                    {
-                        linha.TarifaUnit = PdfExtractorUtils.ParseStringToDecimal(infos[2]);
-                        linha.PrecoUnit = PdfExtractorUtils.ParseStringToDecimal(infos[3]);
-                        linha.Valor = PdfExtractorUtils.ParseStringToDecimal(infos[4]);
-                    }
 
+                    linha.TarifaUnit = PdfExtractorUtils.ParseStringToDecimal(infos[2]);
+                    linha.PrecoUnit = PdfExtractorUtils.ParseStringToDecimal(infos[3]);
+                    linha.Valor = PdfExtractorUtils.ParseStringToDecimal(infos[4]);
                 }
                 else if (linha.Descricao.IndexOf("Adicional de Bandeira") >= 0)
                 {
@@ -154,32 +150,14 @@ namespace MoveEnergia.Billing.Extractor.Service
                     linha.ICMS = PdfExtractorUtils.ParseStringToDecimal(infos[4]);
                     linha.PIS = PdfExtractorUtils.ParseStringToDecimal(infos[5]);
                     linha.Cofins = PdfExtractorUtils.ParseStringToDecimal(infos[6]);
-                } else
-                {
-                    //algumas linhas possem menos informações, tarifas e alguns impostos
-                    //fixando numero de casas decimais para buscar a energia consumida correta
-                    Match match2 = Regex.Match(pageText, @"kWh (\d{1,3}[.])*\d{1,3},\d{4} \d{1,3},\d{8} \d{1,3},\d{8}");
-                    if (match2.Success)
-                    {
-                        Log.Debug($"First match: {match2.Value}");
-                        string[] infos2 = match2.Value.Split(" ");
-
-                        linha.Qtd = PdfExtractorUtils.ParseStringToDecimal(infos2[1]);
-
-                        linha.TarifaUnit = PdfExtractorUtils.ParseStringToDecimal(infos2[2]);
-                        linha.PrecoUnit = PdfExtractorUtils.ParseStringToDecimal(infos2[3]);
-                    }
                 }
 
-                string descrNoSpaces = linha.Descricao.Replace(" ", string.Empty);
-                    Log.Debug("[" + linha.Descricao + "][" + linha.Qtd + "]");
-                if (descrNoSpaces.IndexOf("Consumo-TE") >= 0 || descrNoSpaces.IndexOf("EnergiaAtivaFornecida-TE") >= 0
-                    || descrNoSpaces.IndexOf("ConsFPontaTE") >= 0) 
+                if (linha.Descricao.IndexOf("Consumo - TE") >= 0)
                 {
                     energiaConsumida += Convert.ToInt32(linha.Qtd);
-                } else if (descrNoSpaces.IndexOf("EnergAtvInj.oUCmPT-TE") >= 0 || descrNoSpaces.IndexOf("EnergAtvInj.oUCmPT-FPTE") >= 0)
+                } else if (linha.Descricao.IndexOf("Energ Atv Inj. oUC mPT - TE") >= 0)
                 {
-                    energiaCompensada += (decimal)(linha.Qtd != null ? linha.Qtd : 0);
+                    energiaCompensada += Convert.ToInt32(linha.Qtd);
                 }
 
                 pdfData.EnergiaCompensada = energiaCompensada;
@@ -193,17 +171,12 @@ namespace MoveEnergia.Billing.Extractor.Service
 
         private void processPDF(PdfDocument document, FaturaPdfData pdfData)
         {
+
             int pages = document.GetPages().Count();
-            
+
             Page page1 = document.GetPage(1);
 
             var (pageText1, pageText1NoBreakLines) = PdfExtractorUtils.GetTextFromPage(page1);
-            if (String.IsNullOrWhiteSpace(pageText1))
-            {
-                pdfData.ErrorMessage = "Página 1 - Sem conteúdo texto na página";
-                return;
-            }
-
             string? pageText2 = null;
             string? pageText2NoBreakLines = null;
             if (pages > 1)
@@ -213,17 +186,20 @@ namespace MoveEnergia.Billing.Extractor.Service
 
             Log.Debug(pageText1);
 
-            if (!FindUC(pageText1, pdfData)) { return; }
-            if (!GetDadosCliente(pageText1, pdfData)) {
-                if (pages > 1 && !GetDadosCliente(pageText2, pdfData)) return;  
+            if (!FindUC(pageText1, pdfData)) { }
+            if (!GetDadosCliente(pageText1, pdfData))
+            {
+                if (pages > 1 && !GetDadosCliente(pageText2, pdfData)) return;
             }
-            ;
             GetDadosLeitura(pageText1, pdfData);
 
+            Log.Debug("EMISSAO 0");
             Match match = Regex.Match(pageText1NoBreakLines, @"EMISSAO: \d{2}\/\d{2}\/\d{4}");
             if (match.Success)
             {
+                Log.Debug("EMISAAO1:" + match.Value);
                 match = Regex.Match(match.Value, @"\d{2}\/\d{2}\/\d{4}");
+                Log.Debug("EMISAAO2:" + match.Value);
                 pdfData.DataEmissao = PdfExtractorUtils.ParseStringToDate(match.Value);
             }
 
@@ -231,7 +207,8 @@ namespace MoveEnergia.Billing.Extractor.Service
             if (match.Success)
             {
                 pdfData.CodBarras = match.Value.Replace(".", "").Replace(" ", "");
-            } else
+            }
+            else
             {
                 if (pages > 1 && !String.IsNullOrEmpty(pageText2))
                 {
@@ -240,7 +217,7 @@ namespace MoveEnergia.Billing.Extractor.Service
                     {
                         pdfData.CodBarras = match.Value.Replace(".", "").Replace(" ", "");
                     }
-                }                
+                }
             }
 
             match = Regex.Match(pageText1NoBreakLines, @"Saldo em Energia da Instalacao:([ ]*\w+[ ]*)(\d{1,3}.)*\d{1,3},\d{1,12} kWh");

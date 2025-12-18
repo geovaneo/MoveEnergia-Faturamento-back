@@ -67,10 +67,12 @@ namespace MoveEnergia.Billing.Data.Mappings
 
             builder.Property(x => x.EnergiaCompensada)
                    .HasColumnName("energiacompensada")
+                   .HasPrecision(12, 5)
                    .IsRequired(false);
 
             builder.Property(x => x.EnergiaSaldo)
                    .HasColumnName("energiasaldo")
+                   .HasPrecision(12, 5)
                    .IsRequired(false);
 
             builder.Property(x => x.CodBarras)

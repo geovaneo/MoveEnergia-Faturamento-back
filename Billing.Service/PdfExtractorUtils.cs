@@ -2,14 +2,30 @@
 using System.Globalization;
 using System.Reflection.Metadata;
 using System.Security.Cryptography;
+using System.Text;
+using System.Text.RegularExpressions;
 using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig.Core;
+using UglyToad.PdfPig.DocumentLayoutAnalysis.TextExtractor;
 using UglyToad.PdfPig.Geometry;
 
 namespace MoveEnergia.Billing.Extractor.Service
 {
     public class PdfExtractorUtils 
     {
+
+        public static string REGEX_CODBARRAS = @"\d{48}|(\d{5}.(\d{5} \d{5}|\d{10}).(\d{6} \d{5}|\d{11}).(\d{6} \d{1} \d{14}|\d{21}))|(\d{12}[ ]\d{12}[ ]\d{12}[ ]\d{12})";
+
+        public static (string, string) GetTextFromPage(Page page)
+        {
+            string pageText1 = ContentOrderTextExtractor.GetText(page, true);
+            pageText1 = Regex.Replace(pageText1.Trim(), @"[ ]+", " ");
+            pageText1 = pageText1.Normalize(NormalizationForm.FormD);
+            pageText1 = Regex.Replace(pageText1, @"\p{Mn}+", "", RegexOptions.None);
+            string pageText1NoBreakLines = Regex.Replace(pageText1.Trim(), @"\s+", " ");
+
+            return (pageText1, pageText1NoBreakLines);
+        }
 
         public static Word FindWordByText(Page page, string wordToFind, PdfRectangle area)
         {
@@ -30,8 +46,9 @@ namespace MoveEnergia.Billing.Extractor.Service
             Log.Debug($"Anchor:{anchor.BoundingBox}");
 
             double center = anchor.BoundingBox.Left + (anchor.BoundingBox.Width / 2);
-
+            Log.Debug("anchor center:" + anchor.BoundingBox.Left + "//" + anchor.BoundingBox.Width+"//center:"+center);
             double x1 = center + offsetX1;
+            Log.Debug("anchor x1:" + x1);
             double x2 = center + offsetX2;
             double y1 = anchor.BoundingBox.Top - offsetY1;
             double y2 = anchor.BoundingBox.Top - offsetY2;
@@ -110,6 +127,25 @@ namespace MoveEnergia.Billing.Extractor.Service
             DateTime dt;
             bool isSuccess = DateTime.TryParseExact(texto, "dd/MM/yyyy", new CultureInfo("pt-BR"), DateTimeStyles.None, out dt);
             return dt;
+        }
+
+        public static string ParseMonthStringToNumber(string dateRef)
+        {
+            string[] refs = dateRef.Split("/");
+            string month = refs[0].ToUpper();
+            if ("JAN".Equals(month)) return "01/" + refs[1];
+            else if ("FEV".Equals(month)) return "02/" + refs[1];
+            else if ("MAR".Equals(month)) return "03/" + refs[1];
+            else if ("ABR".Equals(month)) return "04/" + refs[1];
+            else if ("MAI".Equals(month)) return "05/" + refs[1];
+            else if ("JUN".Equals(month)) return "06/" + refs[1];
+            else if ("JUL".Equals(month)) return "07/" + refs[1];
+            else if ("AGO".Equals(month)) return "08/" + refs[1];
+            else if ("SET".Equals(month)) return "09/" + refs[1];
+            else if ("OUT".Equals(month)) return "10/" + refs[1];
+            else if ("NOV".Equals(month)) return "11/" + refs[1];
+            else if ("DEZ".Equals(month)) return "12/" + refs[1];
+            return "";
         }
 
         public static Decimal ParseStringToDecimal(string texto)

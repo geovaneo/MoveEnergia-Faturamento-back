@@ -19,8 +19,8 @@ namespace MoveEnergia.Billing.Core.Entity
         public string? FolderName { get; set; }
 
         public int? EnergiaConsumida { get; set; }
-        public int? EnergiaCompensada { get; set; }
-        public int? EnergiaSaldo { get; set; }
+        public decimal? EnergiaCompensada { get; set; }
+        public decimal? EnergiaSaldo { get; set; }
 
         public string? CodBarras { get; set; }
 

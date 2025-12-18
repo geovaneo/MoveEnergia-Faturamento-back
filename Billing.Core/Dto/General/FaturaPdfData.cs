@@ -13,8 +13,8 @@
         public DateTime? LeituraAtual { get; set; }
         public DateTime? DataEmissao { get; set; }
         public int EnergiaConsumida { get; set; }
-        public int EnergiaCompensada { get; set; }
-        public int EnergiaSaldo { get; set; }
+        public Decimal EnergiaCompensada { get; set; }
+        public Decimal EnergiaSaldo { get; set; }
         public string? CodBarras { get; set; }
 
         public string? ErrorMessage { get; set; }

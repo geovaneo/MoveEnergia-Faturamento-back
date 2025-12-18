@@ -18,16 +18,19 @@ namespace MoveEnergia.Billing.Extractor.Service
     {
         private readonly ILogger<PdfExtractorService> _logger;
         private readonly ILeituraFaturaPdfRepository _leituraFaturaRep;
+        private readonly ILeituraFaturaPdfLogRepository _leituraFaturaLogRep;
         private readonly ILeituraFaturaPdfProcessoRepository _leituraFaturaProcessoRep;
         private readonly ApplicationDbContext _dbContext;
 
         public PdfExtractorService(ILogger<PdfExtractorService> logger,
                 ILeituraFaturaPdfRepository leituraFaturaRep,
+                ILeituraFaturaPdfLogRepository leituraFaturaLogRep,
                 ILeituraFaturaPdfProcessoRepository leituraFaturaProcessoRep,
                 ApplicationDbContext dbContext)
         {
             _logger = logger;
             _leituraFaturaRep = leituraFaturaRep;
+            _leituraFaturaLogRep = leituraFaturaLogRep;
             _leituraFaturaProcessoRep = leituraFaturaProcessoRep;
             _dbContext = dbContext;
         }
@@ -36,28 +39,28 @@ namespace MoveEnergia.Billing.Extractor.Service
             FaturaPdfData pdfData = new FaturaPdfData();
 
             LeituraFaturaPdfProcesso processo = new LeituraFaturaPdfProcesso();
+            processo.Logs = new List<LeituraFaturaPdfLog>();
             processo.Inicio = DateTime.Now;
 
             //string sourcePath = @"C:\Temp\moveenergia-faturas\2025-10";
-            string sourcePath = @"C:\Temp\moveenergia-faturas\2025-10-2";
-            //string sourcePath = @"C:\Users\Administrator\MOVE Energia\GD - Operação - 05. Fatura\2025.10";
+            //string sourcePath = @"C:\Temp\moveenergia-faturas\2025-10-2";
+            string sourcePath = @"C:\Users\Administrator\MOVE Energia\GD - Operação - 05. Fatura\2025.10";
 
             if (!String.IsNullOrWhiteSpace(sourcePath) && !sourcePath.EndsWith(@"\")) sourcePath += @"\";
             Log.Debug("Pasta Origem:" + sourcePath + "//Directory.Exists:" + Directory.Exists(sourcePath));
             if (Directory.Exists(sourcePath))
             {
-                int i = 0;
+                int i = 0, processados = 0 ;
                 DirectoryInfo dirInfo = new DirectoryInfo(sourcePath);
                 
                 //ASC DATE
                 FileInfo[] fileEntries = dirInfo.GetFiles().OrderBy(p => p.LastWriteTime).ToArray();
 
-                Log.Debug("FileEntries:" + fileEntries);
                 foreach (FileInfo fileInfo in fileEntries)
                 {
                     i += 1;
                     string fileName = fileInfo.FullName;
-                    Log.Debug("{2}::Arquivo:{0}: Criado em:{1}", fileName, fileInfo.LastWriteTime, i);
+                    Log.Debug("Idx{2}::Processados{3}::Arquivo:{0}: Criado em:{1}", fileName, fileInfo.LastWriteTime, i, processados);
 
                     //if (fileName.IndexOf("3510590-copel") < 0) continue;
 
@@ -66,9 +69,9 @@ namespace MoveEnergia.Billing.Extractor.Service
                     LeituraFaturaPdf? faturaDomain = await _dbContext.LeituraFaturaPdfs
                             .Where(u => u.FileMD5 == md5)
                             .FirstOrDefaultAsync();
-                    Log.Debug("teste");
+                    
                     if (faturaDomain != null) continue;
-                    Log.Debug("teste2");
+
                     using (PdfDocument document = PdfDocument.Open(fileName))
                     {
                         Page page = document.GetPage(1);
@@ -100,8 +103,7 @@ namespace MoveEnergia.Billing.Extractor.Service
                         }
                         else if (TextOut.IndexOf("COMPANHIA PAULISTA DE FORÇA E LUZ") >= 0)
                         {
-                            Log.Debug("CPFL");
-                            continue;
+                            extractor = new PdfExtractorCpfl();
                         }
                         else if (TextOut.IndexOf("CNPJ 02.328.280/0001-97") >= 0)
                         {
@@ -110,8 +112,7 @@ namespace MoveEnergia.Billing.Extractor.Service
                         }
                         else if (TextOut.IndexOf("COMPANHIA ESTADUAL DE DISTRIBUICAO DE ENERGIA ELETRICA") >= 0)
                         {
-                            Log.Debug("CEEE");
-                            continue;
+                            extractor = new PdfExtractorCEEE();
                         }
                         else if (TextOut.IndexOf("Ampla Energia e Serviços S. A.") >= 0)
                         {
@@ -128,10 +129,16 @@ namespace MoveEnergia.Billing.Extractor.Service
                             //Log.Debug("Ampla Energia");
                             continue;
                         }
+                        else if (TextOut.IndexOf("COMPANHIA JAGUARI DE ENERGIA") >= 0)
+                        {
+                            //Log.Debug("Ampla Energia");
+                            continue;
+                        }
                         else
                         {
                             //Documento Ignorado
-                            break;
+                            Log.Debug("DISTRNAOMAPEADA");
+                            continue;
                         }
                         if (extractor != null)
                         {
@@ -184,13 +191,39 @@ namespace MoveEnergia.Billing.Extractor.Service
                                 await _leituraFaturaRep.SaveAsync();
 
                             }
-                            else Log.Debug(data.ErrorMessage);
+                            else
+                            {
+                                Log.Debug(data.ErrorMessage);
+
+                                LeituraFaturaPdfLog faturaLog = new LeituraFaturaPdfLog();
+                                faturaLog.Processo = processo.Id;
+                                faturaLog.FileName = fileInfo.Name;
+                                faturaLog.FolderName = fileInfo.DirectoryName;
+                                faturaLog.FileMD5 = md5;
+                                faturaLog.NomeDistribuidora = extractor.GetDistribuidora();
+                                faturaLog.DataHora = DateTime.Now;
+
+                                if (data == null)
+                                {
+                                    faturaLog.Mensagem = "Erro não identificado na extração.(DATARET_NULL)";
+                                } else
+                                {
+                                    faturaLog.Mensagem = data.ErrorMessage;
+                                }
+
+                                processo.Logs.Add(faturaLog);
+                                //await _leituraFaturaLogRep.CreateAsync(faturaLog);
+                                //await _leituraFaturaLogRep.SaveAsync();
+
+
+                            }
+                            processados++;
                         }
 
                         document.Dispose();
                     }
 
-                    if (i == 500) break;
+                    if (processados == 500) break;
                 }
             }
 

@@ -21,6 +21,6 @@ namespace MoveEnergia.Billing.Data.Mappings
                    .HasColumnName("termino")
                    .IsRequired(false);
 
-        }
+    }
     }
 }

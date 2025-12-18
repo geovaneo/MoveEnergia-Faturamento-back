@@ -38,6 +38,7 @@ namespace MoveEnergia.Billing.IoC
             services.AddScoped<IConsumerUnitRepository, ConsumerUnitRepository>();
 
             services.AddScoped<ILeituraFaturaPdfRepository, LeituraFaturaPdfRepository>();
+            services.AddScoped<ILeituraFaturaPdfLogRepository, LeituraFaturaPdfLogRepository>();
             services.AddScoped<ILeituraFaturaPdfProcessoRepository, LeituraFaturaPdfProcessoRepository>();
         }
 

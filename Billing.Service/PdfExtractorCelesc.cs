@@ -18,11 +18,17 @@ namespace MoveEnergia.Billing.Extractor.Service
         public PdfExtractorCelesc()
         {
         }
+
+        public string GetDistribuidora()
+        {
+            return "CELESC-DIS";
+        }
+
         public async Task<FaturaPdfData> ExtractInfo(PdfDocument document)
         {
             Log.Debug("extract celesc");
             FaturaPdfData pdfData = new FaturaPdfData();
-            pdfData.NomeDistribuidora = "CELESC-DIS";
+            pdfData.NomeDistribuidora = GetDistribuidora();
 
             processPDF(document, pdfData);
 
@@ -84,7 +90,7 @@ namespace MoveEnergia.Billing.Extractor.Service
 
         }
 
-        private void GetDadosLeitura(Page page, FaturaPdfData pdfData, double anchorPagina)
+        private bool GetDadosLeitura(Page page, FaturaPdfData pdfData, double anchorPagina)
         {
             var areaWithoutBorders = new PdfRectangle(0, anchorPagina - 300, page.Width * 0.75, anchorPagina);
             //Log.Debug($"x1: {0} y1: {600} x2:{page.Width / 2} y2:{page.Height} height:{page.Height}");
@@ -97,9 +103,10 @@ namespace MoveEnergia.Billing.Extractor.Service
                 .ToList();
 
             var pageText = string.Join(" ", sortedWords);
+            Log.Debug("GetDadosLeitura");
             Log.Debug(pageText);
 
-            Match match = Regex.Match(pageText, "(\\d{2}\\/\\d{2}\\/\\d{4}) (\\d{2}\\/\\d{2}\\/\\d{4}) (\\d{2}\\/\\d{2}\\/\\d{4})");
+            Match match = Regex.Match(pageText, @"(\d{2}\/\d{2}\/\d{4}) (\d{2}\/\d{2}\/\d{4}) (\d{2}\/\d{2}\/\d{4})*");
             if (match.Success)
             {
                 Log.Debug($"First match: {match.Value} at index {match.Index}");
@@ -108,18 +115,27 @@ namespace MoveEnergia.Billing.Extractor.Service
                 pdfData.LeituraAnterior = PdfExtractorUtils.ParseStringToDate(infos[0]);
                 pdfData.LeituraAtual = PdfExtractorUtils.ParseStringToDate(infos[1]);
             }
+            else
+            {
+                pdfData.ErrorMessage = "Leitura Anterior e Atual não identificados";
+                return false;
+            }
 
-            match = Regex.Match(pageText, @"Energia \d{1,3}.\d{1,3} \d{1,3}.\d{1,3} \d{1,3},\d{1,5} \d{1,3},\d{1,3} \d{1,3}.\d{1,3}");
+            /*match = Regex.Match(pageText, @"Energia \d{1,3}.\d{1,3} \d{1,3}.\d{1,3} \d{1,3},\d{1,5} \d{1,3},\d{1,3} (\d{1,3}\.)*\d{1,3}");
             if (match.Success)
             {
                 Log.Debug($"First match: {match.Value} at index {match.Index}");
                 string[] infos = match.Value.Split(" ");
 
                 pdfData.EnergiaConsumida = PdfExtractorUtils.ParseStringToInt(infos[5]);
-                //pdfData.LeituraAtual = PdfExtractorUtils.ParseStringToDate(infos[1]);
             }
+            else
+            {
+                pdfData.ErrorMessage = "Energ. Consumida não identificada";
+                return false;
+            }*/
 
-
+            return true;
         }
 
         private void GetLinhasFatura(Page page, FaturaPdfData pdfData, double anchorPagina)
@@ -140,7 +156,8 @@ namespace MoveEnergia.Billing.Extractor.Service
             Log.Debug("LINHAS");
             Log.Debug(pageText);
 
-            int energiaCompensada = 0;
+            Decimal energiaCompensada = 0;
+            int energiaConsumida = 0;
             string texto = pageText.Trim();
             MatchCollection matches = Regex.Matches(pageText, @"KWH (\d{1,3}[.])*\d{1,3},\d{1,6} [-]*\d{1,2},\d{1,6} [-]*(\d{1,3}[.])*\d{1,3},\d{1,2} [-]*\d{1,3},\d{1,2} [-]*\d{1,3},\d{1,2} \d{1,3},\d{1,2} [-]*\d{1,3},\d{1,2} \d{1,3},\d{1,6}");
             foreach (Match match in matches)
@@ -171,13 +188,18 @@ namespace MoveEnergia.Billing.Extractor.Service
                     Log.Debug("Nome:" + texto.Substring(0, nextOrEnd));
                     linha.Descricao = texto.Substring(0, nextOrEnd).Trim();
 
-                    if (linha.Descricao.IndexOf("Energia Injet. TE") >= 0)
+                    if (linha.Descricao.Replace(" ", string.Empty).IndexOf("ConsumoTE") >= 0)
                     {
-                        energiaCompensada += Convert.ToInt32(linha.Qtd);
+                        energiaConsumida += Convert.ToInt32(linha.Qtd);
+                    }
+                    else if (linha.Descricao.Replace(" ", string.Empty).IndexOf("EnergiaInjet.TE") >= 0)
+                    {
+                        energiaCompensada += (decimal)(linha.Qtd != null ? linha.Qtd : 0);
                     }
                 }
                 else linha.Descricao = "NAO IDENT";
 
+                pdfData.EnergiaConsumida = energiaConsumida;
                 pdfData.EnergiaCompensada = energiaCompensada;
 
                 pdfData.Linhas.Add(linha);
