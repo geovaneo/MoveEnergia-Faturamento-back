@@ -195,7 +195,7 @@ namespace MoveEnergia.Billing.Extractor.Service
             Decimal tarifaConsumo = 0;
             Decimal tarifaCompensada = 0;
             string texto = pageText.Trim();
-            MatchCollection matches = Regex.Matches(pageText, @"KWH (\d{1,3}[.])*\d{1,3},\d{1,6} [-]*\d{1,2},\d{1,6} [-]*(\d{1,3}[.])*\d{1,3},\d{1,2} [-]*\d{1,3},\d{1,2} [-]*(\d{1,3}[.])*\d{1,3},\d{1,2} \d{1,3},\d{1,2} [-]*\d{1,3},\d{1,2} \d{1,3},\d{1,6}");
+            MatchCollection matches = Regex.Matches(pageText, @"KWH (\d{1,3}[.])*\d{1,3},\d{1,6} [-]*\d{1,2},\d{1,6} [-]*(\d{1,3}[.])*\d{1,3},\d{1,2} [-]*\d{1,3},\d{1,2} [-]*(\d{1,3}[.])*\d{1,3},\d{1,2} \d{1,3},\d{1,2} [-]*(\d{1,3}[.])*\d{1,3},\d{1,2} \d{1,3},\d{1,6}");
             foreach (Match match in matches)
             {
 
@@ -242,7 +242,7 @@ namespace MoveEnergia.Billing.Extractor.Service
 
             pdfData.EnergiaConsumida = energiaConsumida;
             pdfData.EnergiaCompensada = energiaCompensada - (pdfData.EnergiaPainel);
-            pdfData.TarifaConsumo = Math.Round(tarifaConsumo / energiaConsumida, 6);
+            if (energiaConsumida > 0) pdfData.TarifaConsumo = Math.Round(tarifaConsumo / energiaConsumida, 6);
             pdfData.TarifaCompensada = tarifaCompensada;
 
         }
@@ -334,14 +334,17 @@ namespace MoveEnergia.Billing.Extractor.Service
             string textoSemAcentos = Regex.Replace(textoNormalizado, @"\p{Mn}+", "", RegexOptions.None);
             Log.Debug(textoSemAcentos.Trim());
 
-            match = Regex.Match(textoSemAcentos, @"Saldo Final Beneficiaria \d{1,7}");
+            match = Regex.Match(textoSemAcentos, @"Saldo Final (Beneficiaria|Geradora) \d{1,7}[-]*");
+            bool negative = false;
             if (match.Success)
             {
                 Log.Debug("SALDO>>>>"+match.Value);
+                if (match.Value.EndsWith("-")) negative = true;
                 match = Regex.Match(match.Value, @"\d{1,7}");
                 if (match.Success)
                 {
                     pdfData.EnergiaSaldo = PdfExtractorUtils.ParseStringToInt(match.Value);
+                    if (negative) pdfData.EnergiaSaldo = -pdfData.EnergiaSaldo;
                 }
             } else if (document.NumberOfPages > 2)
             {
@@ -351,14 +354,16 @@ namespace MoveEnergia.Billing.Extractor.Service
                 textoSemAcentos = Regex.Replace(textoNormalizado, @"\p{Mn}+", "", RegexOptions.None);
                 Log.Debug(textoSemAcentos.Trim());
 
-                match = Regex.Match(textoSemAcentos, @"Saldo Final Beneficiaria \d{1,7}");
+                match = Regex.Match(textoSemAcentos, @"Saldo Final (Beneficiaria|Geradora) \d{1,7}[-]*");
                 if (match.Success)
                 {
+                    if (match.Value.EndsWith("-")) negative = true;
                     Log.Debug("SALDO>>>>" + match.Value);
                     match = Regex.Match(match.Value, @"\d{1,7}");
                     if (match.Success)
                     {
                         pdfData.EnergiaSaldo = PdfExtractorUtils.ParseStringToInt(match.Value);
+                        if (negative) pdfData.EnergiaSaldo = -pdfData.EnergiaSaldo;
                     }
                 }
             }

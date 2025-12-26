@@ -43,8 +43,8 @@ namespace MoveEnergia.Billing.Extractor.Service
             processo.Inicio = DateTime.Now;
 
             //string sourcePath = @"C:\Temp\moveenergia-faturas\2025-10";
-            string sourcePath = @"C:\Temp\moveenergia-faturas\2025-10-2";
-            //string sourcePath = @"C:\Users\Administrator\MOVE Energia\GD - Operação - 05. Fatura\2025.10";
+            //string sourcePath = @"C:\Temp\moveenergia-faturas\2025-10-2";
+            string sourcePath = @"C:\Users\Administrator\MOVE Energia\GD - Operação - 05. Fatura\2025.10";
 
             if (!String.IsNullOrWhiteSpace(sourcePath) && !sourcePath.EndsWith(@"\")) sourcePath += @"\";
             Log.Debug("Pasta Origem:" + sourcePath + "//Directory.Exists:" + Directory.Exists(sourcePath));
