@@ -6,6 +6,8 @@ namespace MoveEnergia.Billing.Core.Entity
     {
         public int Id { get; set; } 
         public string? UC { get; set; }
+        public string? NomeCliente { get; set; }
+        public string? CpfCnpj { get; set; }
         public string? MesReferencia { get; set; }
         public DateTime? Vencimento { get; set; }
         public DateTime? DataEmissao { get; set; }
@@ -17,10 +19,13 @@ namespace MoveEnergia.Billing.Core.Entity
         public string? FileName { get; set; }
         public string? FileMD5 { get; set; }
         public string? FolderName { get; set; }
+        public int? FlagPainelSolar { get; set; }
 
         public int? EnergiaConsumida { get; set; }
         public decimal? EnergiaCompensada { get; set; }
         public decimal? EnergiaSaldo { get; set; }
+        public decimal? TarifaConsumo { get; set; }
+        public decimal? TarifaCompensada { get; set; }
 
         public string? CodBarras { get; set; }
 

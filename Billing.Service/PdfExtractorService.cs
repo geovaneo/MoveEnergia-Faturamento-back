@@ -43,8 +43,8 @@ namespace MoveEnergia.Billing.Extractor.Service
             processo.Inicio = DateTime.Now;
 
             //string sourcePath = @"C:\Temp\moveenergia-faturas\2025-10";
-            //string sourcePath = @"C:\Temp\moveenergia-faturas\2025-10-2";
-            string sourcePath = @"C:\Users\Administrator\MOVE Energia\GD - Operação - 05. Fatura\2025.10";
+            string sourcePath = @"C:\Temp\moveenergia-faturas\2025-10-2";
+            //string sourcePath = @"C:\Users\Administrator\MOVE Energia\GD - Operação - 05. Fatura\2025.10";
 
             if (!String.IsNullOrWhiteSpace(sourcePath) && !sourcePath.EndsWith(@"\")) sourcePath += @"\";
             Log.Debug("Pasta Origem:" + sourcePath + "//Directory.Exists:" + Directory.Exists(sourcePath));
@@ -152,6 +152,8 @@ namespace MoveEnergia.Billing.Extractor.Service
                                 fatura.NomeDistribuidora = data.NomeDistribuidora;
 
                                 fatura.UC = data.UC;
+                                fatura.NomeCliente = data.NomeCliente;
+                                fatura.CpfCnpj = data.CpfCnpj != null ? data.CpfCnpj.Replace(".", "").Replace("-", "").Replace("/", "") : null;
                                 fatura.MesReferencia = data.MesRef;
                                 fatura.Valor = data.Valor;
                                 fatura.DataEmissao = data.DataEmissao;
@@ -163,6 +165,11 @@ namespace MoveEnergia.Billing.Extractor.Service
                                 fatura.EnergiaConsumida = data.EnergiaConsumida;
                                 fatura.EnergiaCompensada = data.EnergiaCompensada;
                                 fatura.EnergiaSaldo = data.EnergiaSaldo;
+
+                                fatura.TarifaConsumo = data.TarifaConsumo;
+                                fatura.TarifaCompensada = data.TarifaCompensada;
+
+                                fatura.FlagPainelSolar = data.EnergiaPainel;
 
                                 fatura.CodBarras = data.CodBarras;
 

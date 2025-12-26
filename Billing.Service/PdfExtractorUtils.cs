@@ -35,6 +35,7 @@ namespace MoveEnergia.Billing.Extractor.Service
             foreach (Word word in words)
             {
                 Log.Debug("Palavra:" + word.Text + "//" + word.BoundingBox.ToString());
+                Log.Debug("Palavra:" + word.Text + "//####Left:" + word.BoundingBox.Left + "//Right:" + word.BoundingBox.Right + "//Top:" + word.BoundingBox.Top + "//Bot:" + word.BoundingBox.Bottom);
                 if (wordToFind.ToLower().Equals(word.Text.ToLower())) return word;
                 
             }
@@ -72,8 +73,43 @@ namespace MoveEnergia.Billing.Extractor.Service
                     }
                 }*/
             }
-            if (words != null && words.Count > 0) return words.ElementAt(0).Text;
+            if (words != null && words.Count > 0)
+            {
+                Log.Debug(">>>>>>>>>>>>> Encontrou:"+ words.ElementAt(0).Text);
+                return words.ElementAt(0).Text;
+            }
+            Log.Debug("########## Não encontrou a palavra");
+            return null;
+        }
 
+        public static string FindMultipleTextByAnchor(Page page, Word anchor, double offsetX1, double offsetX2, double offsetY1, double offsetY2)
+        {
+            Log.Debug($"Anchor:{anchor.BoundingBox}");
+
+            double center = anchor.BoundingBox.Left + (anchor.BoundingBox.Width / 2);
+            Log.Debug("anchor center:" + anchor.BoundingBox.Left + "//" + anchor.BoundingBox.Width + "//center:" + center);
+            double x1 = center + offsetX1;
+            Log.Debug("anchor x1:" + x1);
+            double x2 = center + offsetX2;
+            double y1 = anchor.BoundingBox.Top - offsetY1;
+            double y2 = anchor.BoundingBox.Top - offsetY2;
+
+            Log.Debug($"y1:{anchor.BoundingBox.Top} // {offsetY1} // {y1}");
+            Log.Debug($"y2:{anchor.BoundingBox.Top} // {offsetY2} // {y2}");
+            PdfRectangle searchArea = new PdfRectangle(x1, y1, x2, y2);
+            Log.Debug($"searchArea:{searchArea}");
+
+            var words = page.GetWords().Where(w => searchArea.Contains(w.BoundingBox)).ToList();
+            foreach (Word word in words)
+            {
+                Log.Debug("Palavra:" + word.Text + "//####Left:" + word.BoundingBox.Left + "//Right:" + word.BoundingBox.Right + "//Top:" + word.BoundingBox.Top + "//Bot:" + word.BoundingBox.Bottom);
+            }
+            if (words != null && words.Count > 0)
+            {
+                Log.Debug(">>>>>>>>>>>>> Encontrou:" + String.Join(" ", words));
+                return String.Join(" ", words);
+            }
+            Log.Debug("########## Não encontrou a palavra");
             return null;
         }
 

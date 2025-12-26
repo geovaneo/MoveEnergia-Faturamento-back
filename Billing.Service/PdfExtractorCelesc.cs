@@ -53,7 +53,7 @@ namespace MoveEnergia.Billing.Extractor.Service
             return true;
         }
 
-        private void GetDadosCliente(Page page, FaturaPdfData pdfData)
+        private bool GetDadosCliente(Page page, FaturaPdfData pdfData)
         {
             var areaWithoutBorders = new PdfRectangle(0, 600, page.Width/2, page.Height);
             //Log.Debug($"x1: {0} y1: {600} x2:{page.Width / 2} y2:{page.Height} height:{page.Height}");
@@ -87,6 +87,31 @@ namespace MoveEnergia.Billing.Extractor.Service
                 pdfData.Vcto = dt;
             }
 
+            Word anchorNome = PdfExtractorUtils.FindWordByText(page, "NOME:", new PdfRectangle(0, 600, page.Width / 2, page.Height));
+            if (anchorNome != null)
+            {
+                Log.Debug("Anchor:" + anchorNome.Text);
+                pdfData.NomeCliente = PdfExtractorUtils.FindMultipleTextByAnchor(page, anchorNome, 10, 200, -3, 10);
+            }
+            else
+            {
+                pdfData.ErrorMessage = "NOME não localizado no documento";
+                return false;
+            }
+
+            Word anchorCpf = PdfExtractorUtils.FindWordByText(page, "CPF/CNPJ:", new PdfRectangle(0, 600, page.Width / 2, page.Height));
+            if (anchorCpf != null)
+            {
+                Log.Debug("Anchor:" + anchorCpf.Text);
+                pdfData.CpfCnpj = PdfExtractorUtils.FindOneTextByAnchor(page, anchorCpf, 10, 150, -5, 10);
+            }
+            else
+            {
+                pdfData.ErrorMessage = "CPF/CNPJ não localizado no documento";
+                return false;
+            }
+
+            return true;
 
         }
 
@@ -135,6 +160,15 @@ namespace MoveEnergia.Billing.Extractor.Service
                 return false;
             }*/
 
+            match = Regex.Match(pageText, @"Energia injetada \d{1,3}.\d{1,3} \d{1,3}.\d{1,3} \d{1,3},\d{1,5} \d{1,3},\d{1,3} (\d{1,3}\.)*\d{1,3}");
+            if (match.Success)
+            {
+                Log.Debug($"First match: {match.Value} at index {match.Index}");
+                string[] infos = match.Value.Split(" ");
+
+                pdfData.EnergiaPainel = PdfExtractorUtils.ParseStringToInt(infos[6]);
+            }            
+
             return true;
         }
 
@@ -158,8 +192,10 @@ namespace MoveEnergia.Billing.Extractor.Service
 
             Decimal energiaCompensada = 0;
             int energiaConsumida = 0;
+            Decimal tarifaConsumo = 0;
+            Decimal tarifaCompensada = 0;
             string texto = pageText.Trim();
-            MatchCollection matches = Regex.Matches(pageText, @"KWH (\d{1,3}[.])*\d{1,3},\d{1,6} [-]*\d{1,2},\d{1,6} [-]*(\d{1,3}[.])*\d{1,3},\d{1,2} [-]*\d{1,3},\d{1,2} [-]*\d{1,3},\d{1,2} \d{1,3},\d{1,2} [-]*\d{1,3},\d{1,2} \d{1,3},\d{1,6}");
+            MatchCollection matches = Regex.Matches(pageText, @"KWH (\d{1,3}[.])*\d{1,3},\d{1,6} [-]*\d{1,2},\d{1,6} [-]*(\d{1,3}[.])*\d{1,3},\d{1,2} [-]*\d{1,3},\d{1,2} [-]*(\d{1,3}[.])*\d{1,3},\d{1,2} \d{1,3},\d{1,2} [-]*\d{1,3},\d{1,2} \d{1,3},\d{1,6}");
             foreach (Match match in matches)
             {
 
@@ -191,20 +227,23 @@ namespace MoveEnergia.Billing.Extractor.Service
                     if (linha.Descricao.Replace(" ", string.Empty).IndexOf("ConsumoTE") >= 0)
                     {
                         energiaConsumida += Convert.ToInt32(linha.Qtd);
+                        tarifaConsumo += (decimal)(Convert.ToInt32(linha.Qtd) * (linha.PrecoUnit != null ? linha.PrecoUnit : 0));
                     }
                     else if (linha.Descricao.Replace(" ", string.Empty).IndexOf("EnergiaInjet.TE") >= 0)
                     {
                         energiaCompensada += (decimal)(linha.Qtd != null ? linha.Qtd : 0);
+                        tarifaCompensada = (decimal)linha.PrecoUnit;
                     }
                 }
                 else linha.Descricao = "NAO IDENT";
 
-                pdfData.EnergiaConsumida = energiaConsumida;
-                pdfData.EnergiaCompensada = energiaCompensada;
-
                 pdfData.Linhas.Add(linha);
             }
 
+            pdfData.EnergiaConsumida = energiaConsumida;
+            pdfData.EnergiaCompensada = energiaCompensada - (pdfData.EnergiaPainel);
+            pdfData.TarifaConsumo = Math.Round(tarifaConsumo / energiaConsumida, 6);
+            pdfData.TarifaCompensada = tarifaCompensada;
 
         }
 
@@ -303,6 +342,24 @@ namespace MoveEnergia.Billing.Extractor.Service
                 if (match.Success)
                 {
                     pdfData.EnergiaSaldo = PdfExtractorUtils.ParseStringToInt(match.Value);
+                }
+            } else if (document.NumberOfPages > 2)
+            {
+                Page pageLast = document.GetPage(document.NumberOfPages);
+                string TextOutLast = ContentOrderTextExtractor.GetText(pageLast, true);
+                textoNormalizado = TextOutLast.Normalize(NormalizationForm.FormD);
+                textoSemAcentos = Regex.Replace(textoNormalizado, @"\p{Mn}+", "", RegexOptions.None);
+                Log.Debug(textoSemAcentos.Trim());
+
+                match = Regex.Match(textoSemAcentos, @"Saldo Final Beneficiaria \d{1,7}");
+                if (match.Success)
+                {
+                    Log.Debug("SALDO>>>>" + match.Value);
+                    match = Regex.Match(match.Value, @"\d{1,7}");
+                    if (match.Success)
+                    {
+                        pdfData.EnergiaSaldo = PdfExtractorUtils.ParseStringToInt(match.Value);
+                    }
                 }
             }
         }

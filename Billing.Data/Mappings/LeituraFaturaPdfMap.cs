@@ -21,6 +21,14 @@ namespace MoveEnergia.Billing.Data.Mappings
                    .HasColumnName("UC")
                    .IsRequired(false);
 
+            builder.Property(x => x.NomeCliente)
+                   .HasColumnName("NomeCliente")
+                   .IsRequired(false);
+
+            builder.Property(x => x.CpfCnpj)
+                   .HasColumnName("CpfCnpj")
+                   .IsRequired(false);
+
             builder.Property(x => x.MesReferencia)
                    .HasColumnName("mesref")
                    .IsRequired(false);
@@ -39,6 +47,10 @@ namespace MoveEnergia.Billing.Data.Mappings
 
             builder.Property(x => x.NomeDistribuidora)
                    .HasColumnName("nomedistr")
+                   .IsRequired(false);
+
+            builder.Property(x => x.FlagPainelSolar)
+                   .HasColumnName("FlagPainelSolar")
                    .IsRequired(false);
 
             builder.Property(x => x.FileName)
@@ -73,6 +85,16 @@ namespace MoveEnergia.Billing.Data.Mappings
             builder.Property(x => x.EnergiaSaldo)
                    .HasColumnName("energiasaldo")
                    .HasPrecision(12, 5)
+                   .IsRequired(false);
+            
+            builder.Property(x => x.TarifaConsumo)
+                   .HasColumnName("TarifaConsumo")
+                   .HasPrecision(12, 8)
+                   .IsRequired(false);
+            
+            builder.Property(x => x.TarifaCompensada)
+                   .HasColumnName("TarifaCompensada")
+                   .HasPrecision(12, 8)
                    .IsRequired(false);
 
             builder.Property(x => x.CodBarras)

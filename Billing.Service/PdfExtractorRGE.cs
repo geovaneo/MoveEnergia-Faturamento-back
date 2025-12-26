@@ -49,11 +49,31 @@ namespace MoveEnergia.Billing.Extractor.Service
             return true;
         }
 
-        private bool GetDadosCliente(string? pageText, FaturaPdfData pdfData)
+        private bool GetDadosCliente(string? pageText, FaturaPdfData pdfData, string UC)
         {
             Log.Debug("GetDadosCliente");
             Log.Debug(pageText);
-            
+
+            //Pega o nome do cliente usando o CNPJ da rge como ancora, e as quebras de linha
+            string[] lines = pageText.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+
+            int idx = 0;
+            foreach (string line in lines)
+            {
+                if (line.IndexOf("02.016.440/0001-62") >= 0)
+                {
+                    if (!String.IsNullOrEmpty(lines[idx + 1].Trim()))
+                    {
+                        pdfData.NomeCliente = lines[idx + 1].Trim();
+                        break;
+                    } else if (!String.IsNullOrEmpty(lines[idx + 2].Trim()))
+                    {
+                        pdfData.NomeCliente = lines[idx + 2].Trim();
+                        break;
+                    }
+                }
+                idx++;
+            }
 
             pageText = Regex.Replace(pageText.Trim(), @"\s+", " ");
 
@@ -72,10 +92,37 @@ namespace MoveEnergia.Billing.Extractor.Service
                 pdfData.ErrorMessage = "Valor, MesRef e Vcto não identificados";
                 return false;
             }
+
+            if (!String.IsNullOrEmpty(UC))
+            {
+                match = Regex.Match(pageText, @"CNPJ: \d{2}.\d{3}.\d{3}\/\d{4}-\d{2} " + UC);
+                if (match.Success)
+                {
+                    Log.Debug($"GetDadosCliente: {match.Value} at index {match.Index}");
+
+                    match = Regex.Match(match.Value, @"\d{2}.\d{3}.\d{3}\/\d{4}-\d{2}");
+                    if (match.Success)
+                    {
+                        Log.Debug($"GetDadosCliente: {match.Value} at index {match.Index}");
+                        pdfData.CpfCnpj = match.Value;
+                    }
+                    else
+                    {
+                        pdfData.ErrorMessage = "Valor, MesRef e Vcto não identificados";
+                        return false;
+                    }
+                }
+                else
+                {
+                    pdfData.ErrorMessage = "CNPJ Cliente não encontrado";
+                    return false;
+                }
+
+            }
             return true;
         }
 
-        private void GetDadosLeitura(string pageText, FaturaPdfData pdfData)
+        private bool GetDadosLeitura(string pageText, FaturaPdfData pdfData)
         {
             pageText = Regex.Replace(pageText.Trim(), @"\s+", " ");
             Log.Debug(">> GetDadosLeitura");
@@ -90,6 +137,16 @@ namespace MoveEnergia.Billing.Extractor.Service
             }
             else Log.Debug(">>>> Não encontrou datas de leitura");
 
+            match = Regex.Match(pageText, @"Energia Injetada \w+ \d{1,5} \d{1,5} \d{1,3}.\d{1,3} \d{1,5}");
+            if (match.Success)
+            {
+                Log.Debug($"First match: {match.Value} at index {match.Index}");
+                string[] infos = match.Value.Split(" ");
+
+                pdfData.EnergiaPainel = PdfExtractorUtils.ParseStringToInt(infos[6]);
+            }
+
+            return true;
         }
 
         private void GetLinhasFatura(FaturaPdfData pdfData, string pageText)
@@ -182,12 +239,11 @@ namespace MoveEnergia.Billing.Extractor.Service
                     energiaCompensada += (decimal)(linha.Qtd != null ? linha.Qtd : 0);
                 }
 
-                pdfData.EnergiaCompensada = energiaCompensada;
-                pdfData.EnergiaConsumida = energiaConsumida;
-
                 pdfData.Linhas.Add(linha);
             }
 
+            pdfData.EnergiaConsumida = energiaConsumida;
+            pdfData.EnergiaCompensada = energiaCompensada - (pdfData.EnergiaPainel);
 
         }
 
@@ -214,8 +270,8 @@ namespace MoveEnergia.Billing.Extractor.Service
             Log.Debug(pageText1);
 
             if (!FindUC(pageText1, pdfData)) { return; }
-            if (!GetDadosCliente(pageText1, pdfData)) {
-                if (pages > 1 && !GetDadosCliente(pageText2, pdfData)) return;  
+            if (!GetDadosCliente(pageText1, pdfData, pdfData.UC)) {
+                if (pages > 1 && !GetDadosCliente(pageText2, pdfData, pdfData.UC)) return;
             }
             ;
             GetDadosLeitura(pageText1, pdfData);
